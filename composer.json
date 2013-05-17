@@ -1,7 +1,7 @@
 {
     "name": "openpsa/installer",
     "type": "composer-installer",
-    "description": "custom Composer installer for OpenPSA,
+    "description": "custom Composer installer for OpenPSA",
     "license": "LGPL",
     "authors": [
         {
