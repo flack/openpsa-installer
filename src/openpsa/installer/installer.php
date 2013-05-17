@@ -1,6 +1,6 @@
 <?php
 namespace openpsa\installer;
-use Composer\Installer as base_installer
+use Composer\Installer as base_installer;
 
 class installer extends base_installer
 {
