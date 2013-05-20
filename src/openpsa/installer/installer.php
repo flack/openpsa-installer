@@ -20,7 +20,7 @@ class installer extends base_installer
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
         parent::update($repo, $initial, $target);
-        $this->_install_statics($this->getPackageBasePath($package));
+        $this->_install_statics($this->getPackageBasePath($target));
     }
 
     /**
