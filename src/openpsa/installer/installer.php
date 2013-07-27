@@ -6,12 +6,15 @@ use Composer\Package\PackageInterface;
 
 class installer extends base_installer
 {
+    private $_type;
+
     /**
      * {@inheritDoc}
      */
     public function supports($packageType)
     {
-        return $packageType === 'midcom-extras';
+        $this->_type = $packageType;
+        return $packageType === 'midcom-site' || $packageType === 'midcom-extras';
     }
 
     /**
@@ -21,6 +24,10 @@ class installer extends base_installer
     {
         parent::update($repo, $initial, $target);
         $this->_install_statics($this->getPackageBasePath($target));
+        if ($this->_type !== 'midcom-extras')
+        {
+            $this->_install_schemas($this->getPackageBasePath($package));
+        }
     }
 
     /**
@@ -30,6 +37,10 @@ class installer extends base_installer
     {
         parent::install($repo, $package);
         $this->_install_statics($this->getPackageBasePath($package));
+        if ($this->_type !== 'midcom-extras')
+        {
+            $this->_install_schemas($this->getPackageBasePath($package));
+        }
     }
 
     private function _install_statics($repo_dir)
@@ -44,11 +55,38 @@ class installer extends base_installer
         {
             return;
         }
+        $prefix = strlen($repo_dir) - 1;
 
         $iterator = new \DirectoryIterator($source);
         foreach ($iterator as $child)
         {
             if (   $child->getType() == 'dir'
+                && substr($child->getFileName(), 0, 1) !== '.')
+            {
+                $relative_path = '../../' . substr($child->getPathname(), $prefix);
+                $this->_link($relative_path, $target . '/' . $child->getFilename());
+            }
+        }
+    }
+
+    private function _install_schemas($repo_dir)
+    {
+        if (extension_loaded('midgard'))
+        {
+            $this->io->write('<warning>Linking schemas is not yet supported on mgd1, please do this manually if necessary</warning>');
+            return;
+        }
+        if (!is_dir($repo_dir . '/schemas'))
+        {
+            return;
+        }
+
+        $basepath = '/usr/share/midgard2/schema/';
+
+        $iterator = new \DirectoryIterator($repo_dir . '/schemas');
+        foreach ($iterator as $child)
+        {
+            if (   $child->getType() == 'file'
                 && substr($child->getFileName(), 0, 1) !== '.')
             {
                 $this->_link($child->getRealPath(), $target . '/' . $child->getFilename());
