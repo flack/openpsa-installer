@@ -51,10 +51,7 @@ class installer extends base_installer
             return;
         }
         $target = dirname($this->vendorDir) . '/web/midcom-static';
-        if (!is_dir($target))
-        {
-            return;
-        }
+        $this->_prepare_dir($target);
         $prefix = strlen($repo_dir) - 1;
 
         $iterator = new \DirectoryIterator($source);
@@ -66,6 +63,15 @@ class installer extends base_installer
                 $relative_path = '../../' . substr($child->getPathname(), $prefix);
                 $this->_link($relative_path, $target . '/' . $child->getFilename());
             }
+        }
+    }
+
+    private function _prepare_dir($dir)
+    {
+        if (   !is_dir('./' . $dir)
+            && !mkdir('./' . $dir))
+        {
+            throw new \Exception('could not create ' . $dir);
         }
     }
 
