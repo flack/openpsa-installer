@@ -13,6 +13,10 @@
     "require": {
         "php": ">=5.3.0"
     },
+    "require-dev":{
+        "composer/composer": "*"
+    },
+    "minimum-stability": "dev",
     "autoload": {
         "psr-0": {"openpsa\\installer": "src/"}
     },
