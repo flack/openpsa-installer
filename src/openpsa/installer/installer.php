@@ -24,6 +24,7 @@ class installer extends base_installer
     {
         parent::update($repo, $initial, $target);
         $this->_install_statics($this->getPackageBasePath($target));
+        $this->_install_themes($this->getPackageBasePath($target));
         if ($this->_type !== 'midcom-extras')
         {
             $this->_install_schemas($this->getPackageBasePath($package));
@@ -37,9 +38,34 @@ class installer extends base_installer
     {
         parent::install($repo, $package);
         $this->_install_statics($this->getPackageBasePath($package));
+        $this->_install_themes($this->getPackageBasePath($target));
         if ($this->_type !== 'midcom-extras')
         {
             $this->_install_schemas($this->getPackageBasePath($package));
+        }
+    }
+
+    private function _install_themes($repo_dir)
+    {
+        $source = $repo_dir . '/themes';
+        if (!is_dir($source))
+        {
+            return;
+        }
+        $target = dirname($this->vendorDir) . '/web/midcom-static';
+        $this->_prepare_dir($target);
+        $prefix = strlen($repo_dir) - 1;
+
+        $iterator = new \DirectoryIterator($source);
+        foreach ($iterator as $child)
+        {
+            if (   $child->getType() == 'dir'
+                && substr($child->getFileName(), 0, 1) !== '.'
+                   && is_dir($child->getPathname()) . '/static')
+            {
+                $relative_path = '../../' . substr($child->getPathname() . '/static', $prefix);
+                $this->_link($relative_path, $target . '/' . $child->getFilename());
+            }
         }
     }
 
