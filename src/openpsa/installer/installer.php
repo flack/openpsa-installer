@@ -27,7 +27,7 @@ class installer extends base_installer
         $this->_install_themes($this->getPackageBasePath($target));
         if ($this->_type !== 'midcom-extras')
         {
-            $this->_install_schemas($this->getPackageBasePath($package));
+            $this->_install_schemas($this->getPackageBasePath($target));
         }
     }
 
@@ -38,7 +38,7 @@ class installer extends base_installer
     {
         parent::install($repo, $package);
         $this->_install_statics($this->getPackageBasePath($package));
-        $this->_install_themes($this->getPackageBasePath($target));
+        $this->_install_themes($this->getPackageBasePath($package));
         if ($this->_type !== 'midcom-extras')
         {
             $this->_install_schemas($this->getPackageBasePath($package));
