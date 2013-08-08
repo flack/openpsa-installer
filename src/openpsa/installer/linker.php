@@ -26,9 +26,8 @@ class linker
         {
             return;
         }
+        $this->_prepare_static_dir();
         $target = $this->_basepath . '/web/midcom-static';
-        $this->_prepare_dir($this->_basepath . '/web');
-        $this->_prepare_dir($target);
         $prefix = strlen($repo_dir) - 1;
 
         $iterator = new \DirectoryIterator($source);
@@ -51,8 +50,8 @@ class linker
         {
             return;
         }
+        $this->_prepare_static_dir();
         $target = $this->_basepath . '/web/midcom-static';
-        $this->_prepare_dir($target);
         $prefix = strlen($repo_dir) - 1;
 
         $iterator = new \DirectoryIterator($source);
@@ -67,12 +66,19 @@ class linker
         }
     }
 
+    private function _prepare_static_dir()
+    {
+        $this->_prepare_dir($this->_basepath . '/web');
+        $this->_prepare_dir($this->_basepath . '/web/midcom-static');
+    }
+
     private function _prepare_dir($dir)
     {
         if (   !is_dir($dir)
             && !@mkdir($dir))
         {
-            throw new \Exception('could not create ' . $dir);
+            $error = error_get_last();
+            throw new \Exception('could not create ' . $dir . ': ' . $error['message']);
         }
     }
 
