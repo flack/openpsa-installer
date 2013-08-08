@@ -6,15 +6,12 @@ use Composer\Package\PackageInterface;
 
 class installer extends base_installer
 {
-    private $_type;
-
     /**
      * {@inheritDoc}
      */
     public function supports($packageType)
     {
-        $this->_type = $packageType;
-        return $packageType === 'midcom-site' || $packageType === 'midcom-extras';
+        return $packageType === 'midcom-package';
     }
 
     /**
