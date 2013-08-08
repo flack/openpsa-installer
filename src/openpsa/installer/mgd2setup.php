@@ -7,23 +7,40 @@
  */
 
 namespace openpsa\installer;
+use Composer\IO\IOInterface;
 
 /**
- * Simple installer class. Sets up a mgd2 configuration and DB
+ * Sets up a mgd2 configuration and DB
  *
  * @package openpsa.installer
  */
 class mgd2setup
 {
+    /**
+     * Composer IO interface
+     *
+     * @var Composer\IO\IOInterface
+     */
     protected $_io;
 
+    /**
+     * The root package path
+     *
+     * @var string
+     */
     protected $_basedir;
 
     protected $_config_name;
 
     protected $_sharedir = '/usr/share/midgard2';
 
-    public function __construct($basedir, $io)
+    /**
+     * Default constructor
+     *
+     * @param string $basedir The root package path
+     * @param IOInterface $io Composer IO interface
+     */
+    public function __construct($basedir, IOInterface $io)
     {
         $this->_io = $io;
         $this->_basedir = $basedir;

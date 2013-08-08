@@ -1,9 +1,22 @@
 <?php
+/**
+ * @package openpsa.installer
+ * @author CONTENT CONTROL http://www.contentcontrol-berlin.de/
+ * @copyright CONTENT CONTROL http://www.contentcontrol-berlin.de/
+ * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License
+ */
+
 namespace openpsa\installer;
 use Composer\Installer\LibraryInstaller as base_installer;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
+use Composer\Script\Event;
 
+/**
+ * Simple installer class. Runs standard Composer functionality attaches custom services where appropriate
+ *
+ * @package openpsa.installer
+ */
 class installer extends base_installer
 {
     /**
@@ -47,14 +60,24 @@ class installer extends base_installer
         parent::uninstall($repo, $package);
     }
 
-    public static function setup_root_package($event)
+    /**
+     * Links package resources to appropriate places
+     *
+     * @param Event $event The event we're called from
+     */
+    public static function setup_root_package(Event $event)
     {
         $basedir = realpath('./');
         $linker = new linker($basedir, $event->getIO());
         $linker->install($basedir);
     }
 
-    public static function prepare_database($event)
+    /**
+     * Prepares Mdigard2 database
+     *
+     * @param Event $event The event we're called from
+     */
+    public static function prepare_database(Event $event)
     {
         $basedir = realpath('./');
         $setup = new mgd2setup($basedir, $event->getIO());

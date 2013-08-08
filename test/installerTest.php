@@ -1,4 +1,10 @@
 <?php
+/**
+ * @package openpsa.installer
+ * @author CONTENT CONTROL http://www.contentcontrol-berlin.de/
+ * @copyright CONTENT CONTROL http://www.contentcontrol-berlin.de/
+ * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License
+ */
 
 use openpsa\installer\installer;
 use Composer\Installer\LibraryInstaller;
@@ -7,6 +13,11 @@ use Composer\Test\TestCase;
 use Composer\Composer;
 use Composer\Config;
 
+/**
+ * Simple installer tests
+ *
+ * @package openpsa.installer
+ */
 class installerTest extends PHPUnit_Framework_TestCase
 {
     /**

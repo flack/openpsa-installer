@@ -1,21 +1,56 @@
 <?php
-namespace openpsa\installer;
+/**
+ * @package openpsa.installer
+ * @author CONTENT CONTROL http://www.contentcontrol-berlin.de/
+ * @copyright CONTENT CONTROL http://www.contentcontrol-berlin.de/
+ * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License
+ */
 
+namespace openpsa\installer;
+use Composer\IO\IOInterface;
+
+/**
+ * Link management service
+ *
+ * @package openpsa.installer
+ */
 class linker
 {
+    /**
+     * The root package path
+     *
+     * @var string
+     */
     private $_basepath;
+
+    /**
+     * Composer IO interface
+     *
+     * @var Composer\IO\IOInterface
+     */
     private $_io;
 
     private $_themes_dir = '/themes';
     private $_schemas_dir = '/schemas';
     private $_static_dir = '/static';
 
-    public function __construct($basepath, $io)
+    /**
+     * Default constructor
+     *
+     * @param string $basepath The root package path
+     * @param IOInterface $io Composer IO interface
+     */
+    public function __construct($basepath, IOInterface $io)
     {
         $this->_basepath = $basepath;
         $this->_io = $io;
     }
 
+    /**
+     * Package installation routine
+     *
+     * @param string $path The package path
+     */
     public function install($path)
     {
         $this->_install_statics($path);
@@ -23,6 +58,11 @@ class linker
         $this->_install_schemas($path);
     }
 
+    /**
+     * Package uninstallation routine
+     *
+     * @param string $path The package path
+     */
     public function uninstall($path)
     {
         $this->_uninstall_statics($path);
@@ -30,6 +70,12 @@ class linker
         $this->_uninstall_schemas($path);
     }
 
+    /**
+     * Direct access to link functionality
+     *
+     * @param string $target
+     * @param string $linkname
+     */
     public function link($target, $linkname)
     {
         $this->_link($target, $linkname);
