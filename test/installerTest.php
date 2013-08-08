@@ -96,7 +96,6 @@ class installerTest extends PHPUnit_Framework_TestCase
 
     public function testSupports()
     {
-        $this->assertTrue($this->installer->supports('midcom-site'));
-        $this->assertTrue($this->installer->supports('midcom-extras'));
+        $this->assertTrue($this->installer->supports('midcom-package'));
     }
 }
