@@ -28,7 +28,7 @@ class linker
         }
         $this->_prepare_static_dir();
         $target = $this->_basepath . '/web/midcom-static';
-        $prefix = strlen($repo_dir) - 1;
+        $prefix_length = strlen($repo_dir) + 1;
 
         $iterator = new \DirectoryIterator($source);
         foreach ($iterator as $child)
@@ -37,7 +37,7 @@ class linker
                 && substr($child->getFileName(), 0, 1) !== '.'
                    && is_dir($child->getPathname()) . '/static')
             {
-                $relative_path = '../../' . substr($child->getPathname() . '/static', $prefix);
+                $relative_path = '../../' . substr($child->getPathname() . '/static', $prefix_length);
                 $this->_link($relative_path, $target . '/' . $child->getFilename(), $child->getPathname());
             }
         }
@@ -52,7 +52,7 @@ class linker
         }
         $this->_prepare_static_dir();
         $target = $this->_basepath . '/web/midcom-static';
-        $prefix = strlen($repo_dir) - 1;
+        $prefix_length = strlen($repo_dir) + 1;
 
         $iterator = new \DirectoryIterator($source);
         foreach ($iterator as $child)
@@ -60,7 +60,7 @@ class linker
             if (   $child->getType() == 'dir'
                 && substr($child->getFileName(), 0, 1) !== '.')
             {
-                $relative_path = '../../' . substr($child->getPathname(), $prefix);
+                $relative_path = '../../' . substr($child->getPathname(), $prefix_length);
                 $this->_link($relative_path, $target . '/' . $child->getFilename(), $child->getPathname());
             }
         }
@@ -122,12 +122,20 @@ class linker
 
         if (is_link($linkname))
         {
-            if (   realpath($linkname) !== $target_path
-                && md5_file(realpath($linkname)) !== md5_file($target_path))
+            if (!file_exists(realpath($linkname)))
             {
-                $this->_io->write('Skipping <info>' . basename($target) . '</info>: Found Link in <info>' . dirname($linkname) . '</info> to <comment>' . realpath($linkname) . '</comment>');
+                $this->_io->write('Link in <info>' . basename($target) . '</info> points to nonexistant path, removing');
+                @unlink($linkname);
             }
-            return;
+            else
+            {
+                if (   realpath($linkname) !== $target_path
+                    && md5_file(realpath($linkname)) !== md5_file($target_path))
+                {
+                    $this->_io->write('Skipping <info>' . basename($target) . '</info>: Found Link in <info>' . dirname($linkname) . '</info> to <comment>' . realpath($linkname) . '</comment>');
+                }
+                return;
+            }
         }
         else if (is_file($linkname))
         {
