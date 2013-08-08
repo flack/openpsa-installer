@@ -36,6 +36,17 @@ class installer extends base_installer
         $linker->install($this->getPackageBasePath($package));
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
+    {
+        parent::uninstall($repo, $package);
+
+        $linker = new linker(dirname($this->vendorDir), $this->io);
+        $linker->uninstall($this->getPackageBasePath($package));
+    }
+
     public static function setup_root_package($event)
     {
         $basedir = realpath('./');
