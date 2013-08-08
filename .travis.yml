@@ -1,0 +1,15 @@
+language: php
+
+php:
+  - 5.3
+  - 5.4
+
+env:
+  - MIDGARD_EXT_VERSION=ratatoskr
+  - MIDGARD_EXT_VERSION=master
+
+before_script:
+  - ./test/travis_midgard2.sh
+  - composer install
+
+script: phpunit --debug
