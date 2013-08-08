@@ -28,7 +28,6 @@ class linker
         }
         $this->_prepare_static_dir();
         $target = $this->_basepath . '/web/midcom-static';
-        $prefix_length = strlen($repo_dir) + 1;
 
         $iterator = new \DirectoryIterator($source);
         foreach ($iterator as $child)
@@ -37,10 +36,16 @@ class linker
                 && substr($child->getFileName(), 0, 1) !== '.'
                    && is_dir($child->getPathname()) . '/static')
             {
-                $relative_path = '../../' . substr($child->getPathname() . '/static', $prefix_length);
-                $this->_link($relative_path, $target . '/' . $child->getFilename(), $child->getPathname());
+                $absolute_path = $child->getPathname() . '/static';
+                $relative_path = $this->_get_relative_path($absolute_path);
+                $this->_link($relative_path, $target . '/' . $child->getFilename(), $absolute_path);
             }
         }
+    }
+
+    private function _get_relative_path($absolute_path)
+    {
+        return '../../' . substr($absolute_path, strlen($this->_basepath) + 1);
     }
 
     private function _install_statics($repo_dir)
@@ -52,7 +57,6 @@ class linker
         }
         $this->_prepare_static_dir();
         $target = $this->_basepath . '/web/midcom-static';
-        $prefix_length = strlen($repo_dir) + 1;
 
         $iterator = new \DirectoryIterator($source);
         foreach ($iterator as $child)
@@ -60,8 +64,9 @@ class linker
             if (   $child->getType() == 'dir'
                 && substr($child->getFileName(), 0, 1) !== '.')
             {
-                $relative_path = '../../' . substr($child->getPathname(), $prefix_length);
-                $this->_link($relative_path, $target . '/' . $child->getFilename(), $child->getPathname());
+                $absolute_path = $child->getPathname();
+                $relative_path = $this->_get_relative_path($absolute_path);
+                $this->_link($relative_path, $target . '/' . $child->getFilename(), $absolute_path);
             }
         }
     }
