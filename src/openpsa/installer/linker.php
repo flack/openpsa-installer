@@ -38,7 +38,7 @@ class linker
                    && is_dir($child->getPathname()) . '/static')
             {
                 $relative_path = '../../' . substr($child->getPathname() . '/static', $prefix);
-                $this->_link($relative_path, $target . '/' . $child->getFilename());
+                $this->_link($relative_path, $target . '/' . $child->getFilename(), $child->getPathname());
             }
         }
     }
@@ -61,15 +61,15 @@ class linker
                 && substr($child->getFileName(), 0, 1) !== '.')
             {
                 $relative_path = '../../' . substr($child->getPathname(), $prefix);
-                $this->_link($relative_path, $target . '/' . $child->getFilename());
+                $this->_link($relative_path, $target . '/' . $child->getFilename(), $child->getPathname());
             }
         }
     }
 
     private function _prepare_dir($dir)
     {
-        if (   !is_dir('./' . $dir)
-            && !mkdir('./' . $dir))
+        if (   !is_dir($dir)
+            && !@mkdir($dir))
         {
             throw new \Exception('could not create ' . $dir);
         }
@@ -100,12 +100,23 @@ class linker
         }
     }
 
-    private function _link($target, $linkname)
+    public function link($target, $linkname)
     {
+        $this->_link($target, $linkname);
+    }
+
+    private function _link($target, $linkname, $target_path = null)
+    {
+        if (null === $target_path)
+        {
+            $target_path = $target;
+        }
+        $target_path = realpath($target_path);
+
         if (is_link($linkname))
         {
-            if (   realpath($linkname) !== $target
-                && md5_file(realpath($linkname)) !== md5_file($target))
+            if (   realpath($linkname) !== $target_path
+                && md5_file(realpath($linkname)) !== md5_file($target_path))
             {
                 $this->_io->write('Skipping <info>' . basename($target) . '</info>: Found Link in <info>' . dirname($linkname) . '</info> to <comment>' . realpath($linkname) . '</comment>');
             }
@@ -113,7 +124,7 @@ class linker
         }
         else if (is_file($linkname))
         {
-            if (md5_file($linkname) !== md5_file($target))
+            if (md5_file($linkname) !== md5_file($target_path))
             {
                 $this->_io->write('Skipping <info>' . basename($target) . '</info>: Found existing file in <comment>' . dirname($linkname) . '</comment>');
             }

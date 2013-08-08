@@ -38,4 +38,18 @@ class installer extends base_installer
         $linker = new linker(dirname($this->vendorDir), $this->io);
         $linker->install($this->getPackageBasePath($package));
     }
+
+    public static function setup_root_package($event)
+    {
+        $basedir = realpath('./');
+        $linker = new linker($basedir, $event->getIO());
+        $linker->install($basedir);
+    }
+
+    public static function prepare_database($event)
+    {
+        $basedir = realpath('./');
+        $setup = new mgd2setup($basedir, $event->getIO());
+        $setup->run();
+    }
 }
