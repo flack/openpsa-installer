@@ -1,4 +1,4 @@
-OpenPSA Installer
+OpenPSA Installer [![Build Status](https://travis-ci.org/flack/openpsa-installer.png?branch=master)](https://travis-ci.org/flack/openpsa-installer)
 =================
 
 Custom [Composer](http://getcomposer.org) installer for [OpenPSA](http://openpsa2.org)/[MidCOM](http://midgard-project.org/midcom/) packages. 
