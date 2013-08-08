@@ -27,6 +27,7 @@ class linker
             return;
         }
         $target = $this->_basepath . '/web/midcom-static';
+        $this->_prepare_dir($this->_basepath . '/web');
         $this->_prepare_dir($target);
         $prefix = strlen($repo_dir) - 1;
 
