@@ -41,10 +41,10 @@ class installer extends base_installer
      */
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        parent::uninstall($repo, $package);
-
         $linker = new linker(dirname($this->vendorDir), $this->io);
         $linker->uninstall($this->getPackageBasePath($package));
+
+        parent::uninstall($repo, $package);
     }
 
     public static function setup_root_package($event)

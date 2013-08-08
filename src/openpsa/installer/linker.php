@@ -107,7 +107,7 @@ class linker
     {
         if (is_link($linkname))
         {
-            $this->_io->write('Removing link <info>' . basename($target) . '</info>');
+            $this->_io->write('Removing link <info>' . $linkname . '</info>');
             @unlink($linkname);
         }
     }
