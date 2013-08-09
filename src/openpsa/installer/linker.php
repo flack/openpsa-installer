@@ -14,37 +14,11 @@ use Composer\IO\IOInterface;
  *
  * @package openpsa.installer
  */
-class linker
+class linker extends service
 {
-    /**
-     * The root package path
-     *
-     * @var string
-     */
-    private $_basepath;
-
-    /**
-     * Composer IO interface
-     *
-     * @var Composer\IO\IOInterface
-     */
-    private $_io;
-
     private $_themes_dir = '/themes';
     private $_schemas_dir = '/schemas';
     private $_static_dir = '/static';
-
-    /**
-     * Default constructor
-     *
-     * @param string $basepath The root package path
-     * @param IOInterface $io Composer IO interface
-     */
-    public function __construct($basepath, IOInterface $io)
-    {
-        $this->_basepath = $basepath;
-        $this->_io = $io;
-    }
 
     /**
      * Package installation routine
@@ -235,16 +209,6 @@ class linker
     {
         $this->_prepare_dir($this->_basepath . '/web');
         $this->_prepare_dir($this->_basepath . '/web/midcom-static');
-    }
-
-    private function _prepare_dir($dir)
-    {
-        if (   !is_dir($dir)
-            && !@mkdir($dir))
-        {
-            $error = error_get_last();
-            throw new \Exception('could not create ' . $dir . ': ' . $error['message']);
-        }
     }
 
     private function _get_relative_path($absolute_path)

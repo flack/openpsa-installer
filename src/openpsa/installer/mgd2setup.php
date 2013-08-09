@@ -14,42 +14,16 @@ use Composer\IO\IOInterface;
  *
  * @package openpsa.installer
  */
-class mgd2setup
+class mgd2setup extends service
 {
-    /**
-     * Composer IO interface
-     *
-     * @var Composer\IO\IOInterface
-     */
-    protected $_io;
-
-    /**
-     * The root package path
-     *
-     * @var string
-     */
-    protected $_basedir;
-
     protected $_config_name;
 
     protected $_sharedir = '/usr/share/midgard2';
 
-    /**
-     * Default constructor
-     *
-     * @param string $basedir The root package path
-     * @param IOInterface $io Composer IO interface
-     */
-    public function __construct($basedir, IOInterface $io)
-    {
-        $this->_io = $io;
-        $this->_basedir = $basedir;
-    }
-
     protected function _load_default($key = null)
     {
         $defaults = array();
-        $defaults_file = $this->_basedir . '/vendor/.openpsa_installer_defaults.php';
+        $defaults_file = $this->_basepath . '/vendor/.openpsa_installer_defaults.php';
         if (file_exists($defaults_file))
         {
             $defaults = json_decode(file_get_contents($defaults_file), true);
@@ -69,7 +43,7 @@ class mgd2setup
     protected function _save_default($key, $value)
     {
         $defaults = $this->_load_default();
-        $defaults_file = $this->_basedir . '/vendor/.openpsa_installer_defaults.php';
+        $defaults_file = $this->_basepath . '/vendor/.openpsa_installer_defaults.php';
         if (file_exists($defaults_file))
         {
             unlink($defaults_file);
@@ -86,7 +60,7 @@ class mgd2setup
         }
         else
         {
-            $config_file = $this->_basedir . "/config/midgard2.ini";
+            $config_file = $this->_basepath . "/config/midgard2.ini";
         }
 
         if (file_exists($config_file))
@@ -153,16 +127,16 @@ class mgd2setup
 
     private function _create_config($config_name)
     {
-        $openpsa_basedir = realpath($this->_basedir . '/vendor/openpsa/midcom/');
-        $project_name = basename($this->_basedir);
-        $linker = new linker($this->_basedir, $this->_io);
+        $openpsa_basedir = realpath($this->_basepath . '/vendor/openpsa/midcom/');
+        $project_name = basename($this->_basepath);
+        $linker = new linker($this->_basepath, $this->_io);
 
-        self::_prepare_dir('config');
-        self::_prepare_dir('var');
-        self::_prepare_dir('var/cache');
-        self::_prepare_dir('var/rcs');
-        self::_prepare_dir('var/blobs');
-        self::_prepare_dir('var/log');
+        $this->_prepare_dir('config');
+        $this->_prepare_dir('var');
+        $this->_prepare_dir('var/cache');
+        $this->_prepare_dir('var/rcs');
+        $this->_prepare_dir('var/blobs');
+        $this->_prepare_dir('var/log');
 
         $linker->link($openpsa_basedir . '/config/midgard_auth_types.xml', $this->_sharedir . '/midgard_auth_types.xml');
         $linker->link($openpsa_basedir . '/config/MidgardObjects.xml', $this->_sharedir . '/MidgardObjects.xml');
@@ -174,11 +148,11 @@ class mgd2setup
         $config->dbpass = $this->_io->askAndHideAnswer('<question>DB password:</question> ');
 
         $config->database = $this->_io->ask('<question>DB name:</question> [<comment>' . $project_name . '</comment>] ', $project_name);
-        $config->blobdir = $this->_basedir . '/var/blobs';
+        $config->blobdir = $this->_basepath . '/var/blobs';
         $config->sharedir = $this->_sharedir;
-        $config->vardir = $this->_basedir . '/var';
-        $config->cachedir = $this->_basedir . '/var/cache';
-        $config->logfilename = $this->_basedir . '/var/log/midgard.log';
+        $config->vardir = $this->_basepath . '/var';
+        $config->cachedir = $this->_basepath . '/var/cache';
+        $config->logfilename = $this->_basepath . '/var/log/midgard.log';
         $config->loglevel = 'warn';
 
         $target_path = getenv('HOME') . '/.midgard2/conf.d/' . $project_name;
@@ -188,7 +162,7 @@ class mgd2setup
         }
 
         $this->_io->write("Configuration file <info>" . $target_path . "</info> created.");
-        $linker->link($target_path, $this->_basedir . '/config/midgard2.ini');
+        $linker->link($target_path, $this->_basepath . '/config/midgard2.ini');
         return $config;
     }
 }
