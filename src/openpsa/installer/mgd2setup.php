@@ -127,7 +127,16 @@ class mgd2setup extends service
 
     private function _create_config($config_name)
     {
-        $openpsa_basedir = realpath($this->_basepath . '/vendor/openpsa/midcom/');
+        if (file_exists($this->_basepath . '/vendor/openpsa/midcom/'))
+        {
+            //openpsa installed as dependeny
+            $openpsa_basedir = realpath($this->_basepath . '/vendor/openpsa/midcom/');
+        }
+        else
+        {
+            //openpsa installed as root package
+            $openpsa_basedir = realpath($this->_basepath);
+        }
         $project_name = basename($this->_basepath);
         $linker = new linker($this->_basepath, $this->_io);
 
