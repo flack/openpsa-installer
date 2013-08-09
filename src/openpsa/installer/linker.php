@@ -256,7 +256,8 @@ class linker extends service
         }
         if (!@symlink($target, $linkname))
         {
-            throw new \Exception('could not link ' . $target . ' to ' . $linkname);
+            $error = error_get_last();
+            throw new \Exception('could not link ' . $target . ' to ' . $linkname . ': ' . $error['message']);
         }
         if ($this->_io->isVerbose())
         {
