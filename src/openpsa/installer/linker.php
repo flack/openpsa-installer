@@ -226,7 +226,7 @@ class linker extends service
 
         if (!file_exists($target_path))
         {
-            throw new \Exception('Cannot link to nonexistent path ' . $target_path);
+            throw new \Exception('Cannot link to nonexistent path ' . $target);
         }
 
         if (is_link($linkname))
