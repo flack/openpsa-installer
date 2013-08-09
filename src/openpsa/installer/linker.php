@@ -224,6 +224,11 @@ class linker extends service
         }
         $target_path = realpath($target_path);
 
+        if (!file_exists($target_path))
+        {
+            throw new \Exception('Cannot link to nonexistent path ' . $target_path);
+        }
+
         if (is_link($linkname))
         {
             if (!file_exists(realpath($linkname)))
