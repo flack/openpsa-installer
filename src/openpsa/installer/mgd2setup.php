@@ -204,8 +204,18 @@ class mgd2setup extends service
             throw new \Exception("Failed to save config file " . $target_path);
         }
 
-        $this->_io->write("Configuration file <info>" . $target_path . "</info> created.");
-        $linker->link($target_path, $this->_basepath . '/config/midgard2.ini');
+        try
+        {
+            $linker->link($target_path, $this->_basepath . '/config/midgard2.ini');
+            $this->_io->write("Configuration file <info>" . $target_path . "</info> created.");
+        }
+        catch (\Exception $e)
+        {
+            // For some strange reason, this happens in Travis. But the config was created successfully
+            // (according to save_file()'s return value anyways), and the link is not essential,
+            // so we print an error and continue
+            $this->_io->write("Configuration file <info>" . $project_name . "</info><error> was successfully created, but could not be linked: <error>" . $e->getMessage() . "</error>");
+        }
         return $config;
     }
 }
