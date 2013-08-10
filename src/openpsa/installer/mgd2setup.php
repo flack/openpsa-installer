@@ -149,28 +149,33 @@ class mgd2setup extends service
 
     private function _create_config($config_name)
     {
+        $project_name = basename($this->_basepath);
+        $linker = new linker($this->_basepath, $this->_io);
+
+        $this->_prepare_dir($this->_basepath . '/config');
+        $this->_prepare_dir($this->_basepath . '/var');
+        $this->_prepare_dir($this->_basepath . '/var/cache');
+        $this->_prepare_dir($this->_basepath . '/var/rcs');
+        $this->_prepare_dir($this->_basepath . '/var/blobs');
+        $this->_prepare_dir($this->_basepath . '/var/log');
+
         if (file_exists($this->_basepath . '/vendor/openpsa/midcom/'))
         {
-            //openpsa installed as dependency
+            // openpsa installed as dependency
             $openpsa_basedir = realpath($this->_basepath . '/vendor/openpsa/midcom/');
         }
         else
         {
-            //openpsa installed as root package
+            // openpsa installed as root package
             $openpsa_basedir = realpath($this->_basepath);
         }
-        $project_name = basename($this->_basepath);
-        $linker = new linker($this->_basepath, $this->_io);
-
-        $this->_prepare_dir('config');
-        $this->_prepare_dir('var');
-        $this->_prepare_dir('var/cache');
-        $this->_prepare_dir('var/rcs');
-        $this->_prepare_dir('var/blobs');
-        $this->_prepare_dir('var/log');
-
-        $linker->link($openpsa_basedir . '/config/midgard_auth_types.xml', $this->_sharedir . '/midgard_auth_types.xml');
-        $linker->link($openpsa_basedir . '/config/MidgardObjects.xml', $this->_sharedir . '/MidgardObjects.xml');
+        // if custom paths are used, we might not be able to find openpsa dir. In this case, we simply hope that
+        // the files are in place already
+        if ($openpsa_basedir)
+        {
+            $linker->link($openpsa_basedir . '/config/midgard_auth_types.xml', $this->_sharedir . '/midgard_auth_types.xml');
+            $linker->link($openpsa_basedir . '/config/MidgardObjects.xml', $this->_sharedir . '/MidgardObjects.xml');
+        }
 
         // Create a config file
         $config = new \midgard_config();
@@ -214,7 +219,7 @@ class mgd2setup extends service
             // For some strange reason, this happens in Travis. But the config was created successfully
             // (according to save_file()'s return value anyways), and the link is not essential,
             // so we print an error and continue
-            $this->_io->write("Configuration file <info>" . $project_name . "</info><error> was successfully created, but could not be linked: <error>" . $e->getMessage() . "</error>");
+            $this->_io->write("Configuration file <info>" . $project_name . "</info> was successfully created, but could not be linked: <error>" . $e->getMessage() . "</error>");
         }
         return $config;
     }
