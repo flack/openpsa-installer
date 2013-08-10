@@ -254,6 +254,12 @@ class linker extends service
             }
             return;
         }
+
+        if (!is_writeable(dirname($linkname)))
+        {
+            throw new \Exception('Cannot create link: ' . dirname($linkname) . ' is not writeable');
+        }
+
         if (!@symlink($target, $linkname))
         {
             $error = error_get_last();
