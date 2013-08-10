@@ -8,6 +8,7 @@
 
 namespace openpsa\installer;
 use Composer\IO\IOInterface;
+use Composer\Util\Filesystem;
 
 /**
  * Installer service base class
@@ -31,6 +32,11 @@ abstract class service
     protected $_io;
 
     /**
+     * @var Composer\Util\Filesystem
+     */
+    protected $_fs;
+
+    /**
      * Default constructor
      *
      * @param string $basepath The root package path
@@ -40,15 +46,11 @@ abstract class service
     {
         $this->_basepath = $basepath;
         $this->_io = $io;
+        $this->_fs = new Filesystem;
     }
 
     protected function _prepare_dir($dir)
     {
-        if (   !is_dir($dir)
-            && !@mkdir($dir))
-        {
-            $error = error_get_last();
-            throw new \Exception('could not create ' . $dir . ': ' . $error['message']);
-        }
+        $this->_fs->ensureDirectoryExists($dir);
     }
 }
