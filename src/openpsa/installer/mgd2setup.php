@@ -8,6 +8,11 @@
 
 namespace openpsa\installer;
 use Composer\IO\IOInterface;
+use Composer\IO\ConsoleIO;
+use Symfony\Component\Console\Input\ArgvInput;
+use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Console\Helper\HelperSet;
+use Symfony\Component\Console\Helper\DialogHelper;
 
 /**
  * Sets up a mgd2 configuration and DB
@@ -19,6 +24,24 @@ class mgd2setup extends service
     protected $_config_name;
 
     protected $_sharedir = '/usr/share/midgard2';
+
+    public $dbtype;
+
+    public static function get($basepath)
+    {
+        $io = new ConsoleIO(new ArgvInput, new ConsoleOutput, new HelperSet(array(new DialogHelper)));
+        return new self($basepath, $io);
+    }
+
+    public function run()
+    {
+        if (getenv('OPENPSA_SKIP_DB_CREATION'))
+        {
+            return;
+        }
+        $config = $this->_load_config();
+        $this->_prepare_database($config);
+    }
 
     protected function _load_default($key = null)
     {
@@ -80,16 +103,6 @@ class mgd2setup extends service
         return $config;
     }
 
-    public function run()
-    {
-        if (getenv('OPENPSA_SKIP_DB_CREATION'))
-        {
-            return;
-        }
-        $config = $this->_load_config();
-        $this->_prepare_database($config);
-    }
-
     private function _prepare_database(\midgard_config $config)
     {
         $this->_io->write('Preparing storage <comment>(this may take a while)</comment>');
@@ -129,6 +142,15 @@ class mgd2setup extends service
         $this->_io->write('Storage created');
     }
 
+    private function _get_db_type()
+    {
+        if (!empty($this->dbtype))
+        {
+            return $this->dbtype;
+        }
+        return $this->_io->ask('<question>DB type:</question> [<comment>MySQL</comment>, SQLite] ', 'MySQL');
+    }
+
     private function _create_config($config_name)
     {
         if (file_exists($this->_basepath . '/vendor/openpsa/midcom/'))
@@ -156,7 +178,7 @@ class mgd2setup extends service
 
         // Create a config file
         $config = new \midgard_config();
-        $config->dbtype = $this->_io->ask('<question>DB type:</question> [<comment>MySQL</comment>, SQLite] ', 'MySQL');
+        $config->dbtype = $this->_get_db_type();
         if ($config->dbtype == 'MySQL')
         {
             $config->dbuser = $this->_io->ask('<question>DB username:</question> [<comment>' . $project_name . '</comment>] ', $project_name);
@@ -180,6 +202,7 @@ class mgd2setup extends service
         $config->loglevel = 'warn';
 
         $target_path = getenv('HOME') . '/.midgard2/conf.d/' . $project_name;
+
         if (!$config->save_file($project_name, true))
         {
             throw new \Exception("Failed to save config file " . $target_path);
