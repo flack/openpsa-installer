@@ -171,7 +171,7 @@ class mgd2setup extends service
         }
         // if custom paths are used, we might not be able to find openpsa dir. In this case, we simply hope that
         // the files are in place already
-        if ($openpsa_basedir)
+        if (file_exists($openpsa_basedir . '/config/midgard_auth_types.xml'))
         {
             $linker->link($openpsa_basedir . '/config/midgard_auth_types.xml', $this->_sharedir . '/midgard_auth_types.xml');
             $linker->link($openpsa_basedir . '/config/MidgardObjects.xml', $this->_sharedir . '/MidgardObjects.xml');
