@@ -133,7 +133,7 @@ class mgd2setup extends service
     {
         if (file_exists($this->_basepath . '/vendor/openpsa/midcom/'))
         {
-            //openpsa installed as dependeny
+            //openpsa installed as dependency
             $openpsa_basedir = realpath($this->_basepath . '/vendor/openpsa/midcom/');
         }
         else
@@ -156,11 +156,22 @@ class mgd2setup extends service
 
         // Create a config file
         $config = new \midgard_config();
-        $config->dbtype = 'MySQL';
-        $config->dbuser = $this->_io->ask('<question>DB username:</question> [<comment>' . $project_name . '</comment>] ', $project_name);
-        $config->dbpass = $this->_io->askAndHideAnswer('<question>DB password:</question> ');
-
-        $config->database = $this->_io->ask('<question>DB name:</question> [<comment>' . $project_name . '</comment>] ', $project_name);
+        $config->dbtype = $this->_io->ask('<question>DB type:</question> [<comment>MySQL</comment>, SQLite] ', 'MySQL');
+        if ($config->dbtype == 'MySQL')
+        {
+            $config->dbuser = $this->_io->ask('<question>DB username:</question> [<comment>' . $project_name . '</comment>] ', $project_name);
+            $config->dbpass = $this->_io->askAndHideAnswer('<question>DB password:</question> ');
+            $config->database = $this->_io->ask('<question>DB name:</question> [<comment>' . $project_name . '</comment>] ', $project_name);
+        }
+        else if ($config->dbtype == 'SQLite')
+        {
+            $config->dbdir = $this->_basepath . '/var';
+            $config->database = $project_name;
+        }
+        else
+        {
+            throw new \Exception('Unsupported DB type ' . $config->dbtype);
+        }
         $config->blobdir = $this->_basepath . '/var/blobs';
         $config->sharedir = $this->_sharedir;
         $config->vardir = $this->_basepath . '/var';

@@ -73,7 +73,7 @@ class installer extends base_installer
     }
 
     /**
-     * Prepares Mdigard2 database
+     * Prepares Midgard2 database
      *
      * @param Event $event The event we're called from
      */
