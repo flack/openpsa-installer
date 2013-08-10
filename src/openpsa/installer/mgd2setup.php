@@ -35,10 +35,6 @@ class mgd2setup extends service
 
     public function run()
     {
-        if (getenv('OPENPSA_SKIP_DB_CREATION'))
-        {
-            return;
-        }
         $config = $this->_load_config();
         $this->_prepare_database($config);
     }

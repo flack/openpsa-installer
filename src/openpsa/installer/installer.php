@@ -81,6 +81,11 @@ class installer extends base_installer
     {
         $basedir = realpath('./');
         $setup = new mgd2setup($basedir, $event->getIO());
+        if (getenv('OPENPSA_INSTALLER_DBTYPE'))
+        {
+            $setup->dbtype = getenv('OPENPSA_INSTALLER_DBTYPE');
+        }
+
         $setup->run();
     }
 }
