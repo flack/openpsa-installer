@@ -34,15 +34,12 @@ class linkerTest extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->basedir = realpath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR . 'test-basedir';
+        $this->basedir = realpath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR . 'test-basedir-' . uniqid();
         $this->io = $this->getMock('Composer\IO\IOInterface');
 
         $this->fs = new Filesystem;
         $this->fs->ensureDirectoryExists($this->basedir);
-        $this->fs->ensureDirectoryExists($this->basedir . DIRECTORY_SEPARATOR . 'static');
         $this->fs->ensureDirectoryExists($this->basedir . DIRECTORY_SEPARATOR . 'static' . DIRECTORY_SEPARATOR . 'component.name');
-        $this->fs->ensureDirectoryExists($this->basedir . DIRECTORY_SEPARATOR . 'themes');
-        $this->fs->ensureDirectoryExists($this->basedir . DIRECTORY_SEPARATOR . 'themes' . DIRECTORY_SEPARATOR . 'theme-name');
         $this->fs->ensureDirectoryExists($this->basedir . DIRECTORY_SEPARATOR . 'themes' . DIRECTORY_SEPARATOR . 'theme-name' . DIRECTORY_SEPARATOR . 'static');
     }
 
@@ -55,9 +52,13 @@ class linkerTest extends PHPUnit_Framework_TestCase
     {
         $linker = new linker($this->basedir, $this->io);
         $linker->install($this->basedir);
+
         $this->assertFileExists($this->basedir . DIRECTORY_SEPARATOR . 'web');
         $this->assertFileExists($this->basedir . DIRECTORY_SEPARATOR . 'web' . DIRECTORY_SEPARATOR . 'midcom-static');
         $this->assertFileExists($this->basedir . DIRECTORY_SEPARATOR . 'web' . DIRECTORY_SEPARATOR . 'midcom-static' . DIRECTORY_SEPARATOR . 'component.name');
         $this->assertFileExists($this->basedir . DIRECTORY_SEPARATOR . 'web' . DIRECTORY_SEPARATOR . 'midcom-static' . DIRECTORY_SEPARATOR . 'theme-name');
+
+        $linker = new linker($this->basedir, $this->io);
+        $linker->install($this->basedir);
     }
 }
