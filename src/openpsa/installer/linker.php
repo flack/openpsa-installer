@@ -151,7 +151,8 @@ class linker extends service
         foreach ($iterator as $child)
         {
             if (   $child->getType() == 'file'
-                && substr($child->getFileName(), 0, 1) !== '.')
+                && substr($child->getFileName(), 0, 1) !== '.'
+                && substr($child->getFilename(), -4) === '.xml')
             {
                 $this->_link($child->getRealPath(), $schema_dir . $child->getFilename());
             }
