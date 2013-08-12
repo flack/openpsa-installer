@@ -258,7 +258,7 @@ class linker extends service
 
         if (!is_writeable(dirname($linkname)))
         {
-            throw new \Exception('Cannot create link ' . basename($target) . ': ' . dirname($linkname) . ' is not writeable');
+            throw new \Exception('Cannot create link ' . basename($linkname) . ': ' . dirname($linkname) . ' is not writeable');
         }
 
         if (!@symlink($target, $linkname))
