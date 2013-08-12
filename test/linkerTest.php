@@ -72,4 +72,19 @@ class linkerTest extends PHPUnit_Framework_TestCase
         $this->assertFileExists($this->basedir . DIRECTORY_SEPARATOR . 'web' . DIRECTORY_SEPARATOR . 'midcom-static' . DIRECTORY_SEPARATOR . 'component.name');
         $this->assertFileNotExists($this->basedir . DIRECTORY_SEPARATOR . 'web' . DIRECTORY_SEPARATOR . 'midcom-static' . DIRECTORY_SEPARATOR . 'theme-name');
     }
+
+    /**
+     * @depends testInstall
+     */
+    public function testUninstall()
+    {
+        $linker = new linker($this->basedir, $this->io);
+        $linker->install($this->basedir);
+
+        $linker = new linker($this->basedir, $this->io);
+        $linker->uninstall($this->basedir);
+
+        $this->assertFileNotExists($this->basedir . DIRECTORY_SEPARATOR . 'web' . DIRECTORY_SEPARATOR . 'midcom-static' . DIRECTORY_SEPARATOR . 'component.name');
+        $this->assertFileNotExists($this->basedir . DIRECTORY_SEPARATOR . 'web' . DIRECTORY_SEPARATOR . 'midcom-static' . DIRECTORY_SEPARATOR . 'theme-name');
+    }
 }
