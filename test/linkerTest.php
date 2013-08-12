@@ -61,4 +61,15 @@ class linkerTest extends PHPUnit_Framework_TestCase
         $linker = new linker($this->basedir, $this->io);
         $linker->install($this->basedir);
     }
+
+    public function testInstall_incomplete_theme_dir()
+    {
+        $this->fs->removeDirectory($this->basedir . DIRECTORY_SEPARATOR . 'themes' . DIRECTORY_SEPARATOR . 'theme-name' . DIRECTORY_SEPARATOR . 'static');
+
+        $linker = new linker($this->basedir, $this->io);
+        $linker->install($this->basedir);
+
+        $this->assertFileExists($this->basedir . DIRECTORY_SEPARATOR . 'web' . DIRECTORY_SEPARATOR . 'midcom-static' . DIRECTORY_SEPARATOR . 'component.name');
+        $this->assertFileNotExists($this->basedir . DIRECTORY_SEPARATOR . 'web' . DIRECTORY_SEPARATOR . 'midcom-static' . DIRECTORY_SEPARATOR . 'theme-name');
+    }
 }

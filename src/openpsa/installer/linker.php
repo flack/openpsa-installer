@@ -174,7 +174,7 @@ class linker extends service
         {
             if (   $child->getType() == 'dir'
                 && substr($child->getFileName(), 0, 1) !== '.'
-                   && is_dir($child->getPathname()) . '/static')
+                && is_dir($child->getPathname() . '/static'))
             {
                 $absolute_path = $child->getPathname() . '/static';
                 $relative_path = $this->_get_relative_path($absolute_path);
