@@ -79,6 +79,11 @@ class installer extends base_installer
      */
     public static function prepare_database(Event $event)
     {
+        if (!extension_loaded('midgard2'))
+        {
+            $event->getIO()->write('<warning>DB setup is only supported on mgd2 at the moment, please do this manually if necessary</warning>');
+            return;
+        }
         $basedir = realpath('./');
         $setup = new mgd2setup($basedir, $event->getIO());
         if (getenv('OPENPSA_INSTALLER_DBTYPE'))
