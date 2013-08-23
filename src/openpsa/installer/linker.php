@@ -134,9 +134,9 @@ class linker extends service
 
     private function _install_schemas($repo_dir)
     {
-        if (extension_loaded('midgard'))
+        if (!extension_loaded('midgard2'))
         {
-            $this->_io->write('<warning>Linking schemas is not yet supported on mgd1, please do this manually if necessary</warning>');
+            $this->_io->write('<warning>Linking schemas is only supported on mgd2 right now, please do this manually if necessary</warning>');
             return;
         }
         $source = $repo_dir . $this->_schemas_dir;
