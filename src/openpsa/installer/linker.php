@@ -19,6 +19,7 @@ class linker extends service
     private $_themes_dir = '/themes';
     private $_schemas_dir = '/schemas';
     private $_static_dir = '/static';
+    private $_schema_location = '/usr/share/midgard2/schema/';
 
     /**
      * Package installation routine
@@ -42,6 +43,11 @@ class linker extends service
         $this->_uninstall_statics($path);
         $this->_uninstall_themes($path);
         $this->_uninstall_schemas($path);
+    }
+
+    public function set_schema_location($path)
+    {
+        $this->_schema_location = $path;
     }
 
     /**
@@ -68,15 +74,13 @@ class linker extends service
             return;
         }
 
-        $schema_dir = '/usr/share/midgard2/schema/';
-
         $iterator = new \DirectoryIterator($source);
         foreach ($iterator as $child)
         {
             if (   $child->getType() == 'file'
                 && substr($child->getFileName(), 0, 1) !== '.')
             {
-                $this->_unlink($schema_dir . $child->getFilename());
+                $this->_unlink($this->_schema_location . $child->getFilename());
             }
         }
     }
@@ -148,8 +152,6 @@ class linker extends service
             return;
         }
 
-        $schema_dir = '/usr/share/midgard2/schema/';
-
         $iterator = new \DirectoryIterator($source);
         foreach ($iterator as $child)
         {
@@ -157,7 +159,7 @@ class linker extends service
                 && substr($child->getFileName(), 0, 1) !== '.'
                 && substr($child->getFilename(), -4) === '.xml')
             {
-                $this->_link($child->getRealPath(), $schema_dir . $child->getFilename());
+                $this->_link($child->getRealPath(), $this->_schema_location . $child->getFilename());
             }
         }
     }

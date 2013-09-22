@@ -41,6 +41,10 @@ class linkerTest extends PHPUnit_Framework_TestCase
         $this->fs->ensureDirectoryExists($this->basedir);
         $this->fs->ensureDirectoryExists($this->basedir . DIRECTORY_SEPARATOR . 'static' . DIRECTORY_SEPARATOR . 'component.name');
         $this->fs->ensureDirectoryExists($this->basedir . DIRECTORY_SEPARATOR . 'themes' . DIRECTORY_SEPARATOR . 'theme-name' . DIRECTORY_SEPARATOR . 'static');
+
+        $this->fs->ensureDirectoryExists($this->basedir . DIRECTORY_SEPARATOR . 'schemas_location');
+        $this->fs->ensureDirectoryExists($this->basedir . DIRECTORY_SEPARATOR . 'schemas');
+        touch($this->basedir . DIRECTORY_SEPARATOR . 'schemas' . DIRECTORY_SEPARATOR . 'component_name.xml');
     }
 
     protected function tearDown()
@@ -48,17 +52,25 @@ class linkerTest extends PHPUnit_Framework_TestCase
         $this->fs->removeDirectory($this->basedir);
     }
 
-    public function testInstall()
+    private function _get_linker()
     {
         $linker = new linker($this->basedir, $this->io);
+        $linker->set_schema_location($this->basedir . DIRECTORY_SEPARATOR . 'schemas_location' . DIRECTORY_SEPARATOR);
+        return $linker;
+    }
+
+    public function testInstall()
+    {
+        $linker = $this->_get_linker();
         $linker->install($this->basedir);
 
         $this->assertFileExists($this->basedir . DIRECTORY_SEPARATOR . 'web');
         $this->assertFileExists($this->basedir . DIRECTORY_SEPARATOR . 'web' . DIRECTORY_SEPARATOR . 'midcom-static');
         $this->assertFileExists($this->basedir . DIRECTORY_SEPARATOR . 'web' . DIRECTORY_SEPARATOR . 'midcom-static' . DIRECTORY_SEPARATOR . 'component.name');
         $this->assertFileExists($this->basedir . DIRECTORY_SEPARATOR . 'web' . DIRECTORY_SEPARATOR . 'midcom-static' . DIRECTORY_SEPARATOR . 'theme-name');
+        $this->assertFileExists($this->basedir . DIRECTORY_SEPARATOR . 'schemas_location' . DIRECTORY_SEPARATOR . 'component_name.xml');
 
-        $linker = new linker($this->basedir, $this->io);
+        $linker = $this->_get_linker();
         $linker->install($this->basedir);
     }
 
@@ -66,7 +78,7 @@ class linkerTest extends PHPUnit_Framework_TestCase
     {
         $this->fs->removeDirectory($this->basedir . DIRECTORY_SEPARATOR . 'themes' . DIRECTORY_SEPARATOR . 'theme-name' . DIRECTORY_SEPARATOR . 'static');
 
-        $linker = new linker($this->basedir, $this->io);
+        $linker = $this->_get_linker();
         $linker->install($this->basedir);
 
         $this->assertFileExists($this->basedir . DIRECTORY_SEPARATOR . 'web' . DIRECTORY_SEPARATOR . 'midcom-static' . DIRECTORY_SEPARATOR . 'component.name');
@@ -78,13 +90,14 @@ class linkerTest extends PHPUnit_Framework_TestCase
      */
     public function testUninstall()
     {
-        $linker = new linker($this->basedir, $this->io);
+        $linker = $this->_get_linker();
         $linker->install($this->basedir);
 
-        $linker = new linker($this->basedir, $this->io);
+        $linker = $this->_get_linker();
         $linker->uninstall($this->basedir);
 
         $this->assertFileNotExists($this->basedir . DIRECTORY_SEPARATOR . 'web' . DIRECTORY_SEPARATOR . 'midcom-static' . DIRECTORY_SEPARATOR . 'component.name');
         $this->assertFileNotExists($this->basedir . DIRECTORY_SEPARATOR . 'web' . DIRECTORY_SEPARATOR . 'midcom-static' . DIRECTORY_SEPARATOR . 'theme-name');
+        $this->assertFileNotExists($this->basedir . DIRECTORY_SEPARATOR . 'schemas_location' . DIRECTORY_SEPARATOR . 'component_name.xml');
     }
 }
