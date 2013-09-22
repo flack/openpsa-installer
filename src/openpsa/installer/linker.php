@@ -71,10 +71,13 @@ class linker extends service
         $schema_dir = '/usr/share/midgard2/schema/';
 
         $iterator = new \DirectoryIterator($source);
-        if (   $child->getType() == 'file'
-            && substr($child->getFileName(), 0, 1) !== '.')
+        foreach ($iterator as $child)
         {
-            $this->_unlink($basepath . $child->getFilename());
+            if (   $child->getType() == 'file'
+                && substr($child->getFileName(), 0, 1) !== '.')
+            {
+                $this->_unlink($schema_dir . $child->getFilename());
+            }
         }
     }
 
