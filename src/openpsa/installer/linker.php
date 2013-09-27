@@ -268,7 +268,7 @@ class linker extends service
             if ($this->_readonly_behavior === null)
             {
                 $this->_io->write('Directory <info>' . dirname($linkname) . '</info> is not writeable.');
-                $reply = $this->_io->ask('<question>Please choose:</question> [<comment>(S)udo</comment>, (C)ontinue, (A)bort]', 'S');
+                $reply = $this->_io->ask('<question>Please choose:</question> [<comment>(S)udo</comment>, (I)gnore, (A)bort]', 'S');
                 $this->_readonly_behavior = strtolower(trim($reply));
             }
             switch ($this->_readonly_behavior)
