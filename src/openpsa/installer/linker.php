@@ -21,6 +21,8 @@ class linker extends service
     private $_static_dir = '/static';
     private $_schema_location = '/usr/share/midgard2/schema/';
 
+    private $_readonly_behavior;
+
     /**
      * Package installation routine
      *
@@ -263,13 +265,38 @@ class linker extends service
 
         if (!is_writeable(dirname($linkname)))
         {
-            throw new \Exception('Cannot create link ' . basename($linkname) . ': ' . dirname($linkname) . ' is not writeable');
+            if ($this->_readonly_behavior === null)
+            {
+                $this->_io->write('Directory <info>' . dirname($linkname) . '</info> is not writeable.');
+                $reply = $this->_io->ask('<question>Please choose:</question> [<comment>(S)udo</comment>, (C)ontinue, (A)bort]', 'S');
+                $this->_readonly_behavior = strtolower(trim($reply));
+            }
+            switch ($this->_readonly_behavior)
+            {
+                case 'a':
+                    throw new \Exception('Aborted by user command');
+                case 'i':
+                    $this->_io->write('<info>Skipped linking ' . basename($linkname) . ' to ' . dirname($linkname) . '</info>');
+                    return;
+                case '':
+                case 's':
+                    exec('sudo ln -s ' . escapeshellarg($target) . ' ' . escapeshellarg($linkname), $output, $return);
+                    if ($return !== 0)
+                    {
+                        throw new \Exception('Failed to link ' . basename($linkname) . ' to ' . dirname($linkname));
+                    }
+                    break;
+                default:
+                    throw new \Exception('Invalid input');
+            }
         }
-
-        if (!@symlink($target, $linkname))
+        else
         {
-            $error = error_get_last();
-            throw new \Exception('could not link ' . $target . ' to ' . $linkname . ': ' . $error['message']);
+            if (!@symlink($target, $linkname))
+            {
+                $error = error_get_last();
+                throw new \Exception('could not link ' . $target . ' to ' . $linkname . ': ' . $error['message']);
+            }
         }
         if ($this->_io->isVerbose())
         {
