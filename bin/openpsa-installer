@@ -8,6 +8,6 @@ require_once $project_dir . '/vendor/autoload.php';
 use Symfony\Component\Console\Application;
 use openpsa\installer\mgd2setup;
 
-$console = new Application();
+$console = new Application('OpenPSA Installer', '1.0.0-dev');
 $console->add(new mgd2setup);
 $console->run();
