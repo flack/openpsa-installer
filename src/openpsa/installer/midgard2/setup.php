@@ -6,14 +6,15 @@
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License
  */
 
-namespace openpsa\installer;
+namespace openpsa\installer\midgard2;
 
+use openpsa\installer\installer;
 use Composer\Util\Filesystem;
 use Composer\IO\ConsoleIO;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -24,12 +25,12 @@ use Symfony\Component\Console\Output\StreamOutput;
  *
  * @package openpsa.installer
  */
-class mgd2setup extends Command
+class setup extends Command
 {
     /**
-     * @var string
+     * @var midgard_config
      */
-    protected $_config_name;
+    protected $_config;
 
     /**
      * @var Symfony\Component\Console\Output\InputInterface
@@ -63,7 +64,7 @@ class mgd2setup extends Command
 
         $args = array
         (
-            'command' => 'mgd2:setup',
+            'command' => 'midgard2:setup',
             '--dbtype' => $dbtype
         );
         $command = $app->find('mgd2:setup');
@@ -79,13 +80,13 @@ class mgd2setup extends Command
 
     protected function configure()
     {
-        $this->setName('mgd2:setup')
+        $this->setName('midgard2:setup')
             ->setDescription('Prepare Midgard2 database and project directory')
             ->addArgument('config', InputArgument::OPTIONAL, 'Full path to Midgard2 config file')
             ->addOption('dbtype', null, InputOption::VALUE_REQUIRED, 'DB type', 'MySQL');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function _initialize(InputInterface $input, OutputInterface $output)
     {
         if (empty($this->_basepath))
         {
@@ -94,8 +95,13 @@ class mgd2setup extends Command
 
         $this->_output = $output;
         $this->_input = $input;
-        $config = $this->_load_config();
-        $this->_prepare_database($config);
+        $this->_config = $this->_load_config();
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
+        $this->_initialize($input, $output);
+        $this->_prepare_storage();
     }
 
     protected function _load_config()
@@ -105,11 +111,32 @@ class mgd2setup extends Command
         {
             $config_file = $this->_basepath . "/config/midgard2.ini";
         }
+        if (   !file_exists($config_file)
+            || !is_file($config_file))
+        {
+            if (file_exists($this->_sharedir . '/' . $config_file))
+            {
+                $config_file = $this->_sharedir . '/' . $config_file;
+            }
+            else
+            {
+                $prefix = getenv('HOME') . '/.midgard2/conf.d/';
+                if (file_exists($prefix . $config_file))
+                {
+                    $config_file = $prefix . $config_file;
+                }
+                else
+                {
+                    throw new \RuntimeException('Could not find config "' . $config_file . '"');
+                }
+            }
+        }
 
+        $config = new \midgard_config;
+        $midgard = \midgard_connection::get_instance();
         if (file_exists($config_file))
         {
             $this->_output->writeln('Using config file found at <info>' . $config_file . '</info>');
-            $config = new \midgard_config();
             if (!$config->read_file_at_path($config_file))
             {
                 throw new \Exception('Could not read config file ' . $config_file);
@@ -117,85 +144,26 @@ class mgd2setup extends Command
         }
         else
         {
-            $config = $this->_create_config($config_file);
+            $config = $this->_create_config();
         }
 
         return $config;
     }
 
-    private function _prepare_database(\midgard_config $config)
-    {
-        $this->_output->writeln('Preparing <info>' . $this->_get_db_type() . '</info> storage <comment>(this may take a while)</comment>');
-        $midgard = \midgard_connection::get_instance();
-        $midgard->open_config($config);
-        if (!$midgard->is_connected())
-        {
-            throw new \Exception("Failed to open config {$config->database}:" . $midgard->get_error_string());
-        }
-        if (!$config->create_blobdir())
-        {
-            throw new \Exception("Failed to create file attachment storage directory to {$config->blobdir}:" . $midgard->get_error_string());
-        }
-
-        $re = new \ReflectionExtension('midgard2');
-        $classes = $re->getClasses();
-        $types = array();
-        foreach ($classes as $refclass)
-        {
-            if (!$refclass->isSubclassOf('midgard_object'))
-            {
-                continue;
-            }
-            $types[] = $refclass->getName();
-        }
-
-        $progress = $this->getHelperSet()->get('progress');
-        $progress->start($this->_output, count($types) + 1);
-
-        // Create storage
-        if (!\midgard_storage::create_base_storage())
-        {
-            if ($midgard->get_error_string() != 'MGD_ERR_OK')
-            {
-                throw new \Exception("Failed to create base database structures" . $midgard->get_error_string());
-            }
-        }
-        $progress->advance();
-
-        foreach ($types as $type)
-        {
-            \midgard_storage::create_class_storage($type);
-            \midgard_storage::update_class_storage($type);
-            $progress->advance();
-        }
-        $progress->finish();
-
-        $this->_output->writeln('Storage created');
-    }
-
     private function _get_db_type()
     {
-        $this->_dbtype = $this->_input->getOption('dbtype');
         if (empty($this->_dbtype))
         {
-            $this->_dbtype = $this->_ask('DB type:', 'MySQL', array('MySQL', 'SQLite'));
+            $this->_dbtype = $this->_input->getOption('dbtype');
+            if (empty($this->_dbtype))
+            {
+                $this->_dbtype = $this->_ask('DB type:', 'MySQL', array('MySQL', 'SQLite'));
+            }
         }
         return $this->_dbtype;
     }
 
-    protected function _ask($question, $default, array $options = null)
-    {
-        $dialog = $this->getHelperSet()->get('dialog');
-        return $dialog->ask($this->_output, '<question>' . $question . '</question>', $default, $options);
-    }
-
-    protected function _ask_hidden($question)
-    {
-        $dialog = $this->getHelperSet()->get('dialog');
-        return $dialog->askHiddenResponse($this->_output, '<question>' . $question . '</question>', false);
-    }
-
-    private function _create_config($config_name)
+    private function _create_config()
     {
         $project_name = basename($this->_basepath);
 
@@ -245,6 +213,77 @@ class mgd2setup extends Command
             $this->_output->writeln("Configuration file <info>" . $project_name . "</info> was successfully created, but could not be linked: <error>" . $e->getMessage() . "</error>");
         }
         return $config;
+    }
+
+    protected function _prepare_storage()
+    {
+        $midgard = \midgard_connection::get_instance();
+        $midgard->open_config($this->_config);
+        if (!$midgard->is_connected())
+        {
+            throw new \Exception("Failed to open config {$this->_config->database}:" . $midgard->get_error_string());
+        }
+        $this->_output->writeln('Preparing <info>' . $this->_config->dbtype . '</info> storage <comment>(this may take a while)</comment>');
+
+        if (!$this->_config->create_blobdir())
+        {
+            throw new \Exception("Failed to create file attachment storage directory to {$this->_config->blobdir}:" . $midgard->get_error_string());
+        }
+
+        $re = new \ReflectionExtension('midgard2');
+        $classes = $re->getClasses();
+        $types = array();
+        foreach ($classes as $refclass)
+        {
+            if (!$refclass->isSubclassOf('midgard_object'))
+            {
+                continue;
+            }
+            $types[] = $refclass->getName();
+        }
+        //No idea why this has to be listed explicitly...
+        $types[] = 'MidgardRepligard';
+
+        $progress = $this->getHelperSet()->get('progress');
+        $progress->start($this->_output, count($types) + 2);
+
+        // Create storage
+        if (!\midgard_storage::create_base_storage())
+        {
+            if ($midgard->get_error_string() != 'MGD_ERR_OK')
+            {
+                throw new \Exception("Failed to create base database structures" . $midgard->get_error_string());
+            }
+        }
+        $progress->advance();
+
+        foreach ($types as $type)
+        {
+            if (\midgard_storage::class_storage_exists($type))
+            {
+                \midgard_storage::update_class_storage($type);
+            }
+            else
+            {
+                \midgard_storage::create_class_storage($type);
+            }
+            $progress->advance();
+        }
+        $progress->finish();
+
+        $this->_output->writeln('Storage created');
+    }
+
+    protected function _ask($question, $default, array $options = null)
+    {
+        $dialog = $this->getHelperSet()->get('dialog');
+        return $dialog->ask($this->_output, '<question>' . $question . '</question>', $default, $options);
+    }
+
+    protected function _ask_hidden($question)
+    {
+        $dialog = $this->getHelperSet()->get('dialog');
+        return $dialog->askHiddenResponse($this->_output, '<question>' . $question . '</question>', false);
     }
 }
 ?>

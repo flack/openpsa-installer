@@ -38,13 +38,38 @@ Additionally, add the following hooks:
 The installer package contains a CLI utility to set up new databases. From your project's root directory, you can run it like this:
 
 ```sh
-./vendor/bin/openpsa-installer mgd2:setup
+./vendor/bin/openpsa-installer midgard2:setup
 ```
 
-You can pass the location of an existing Midgard2 configuration file as an argument to the script, or you can optionally specify the DB type you want to create. Run
+You can pass the name or location of an existing Midgard2 configuration file as an argument to the script, or you can optionally specify the DB type you want to create. Run
 
 ```sh
-./vendor/bin/openpsa-installer help mgd2:setup
+./vendor/bin/openpsa-installer help midgard2:setup
+```
+
+to see all available options.
+
+### Database Conversion
+
+The installer can also convert (simple) Midgard 1 databases. This performs the following actions:
+
+ - preparing config file Midgard 2 storage and connection (like the setup command)
+ - copying contents from multilang tables
+ - resetting ``host`` fields to 0
+ - migrating user accounts
+
+Be advised that this command does not support databases with multiple languages or sitegroups yet. From your project's root directory, you can run it like this:
+
+```sh
+./vendor/bin/openpsa-installer midgard2:convert
+```
+
+You can pass the name or location of an existing Midgard2 configuration file as an argument to the script, or you can optionally specify the auth (i.e. password storage) type you want to use. This can be useful if you have used encrypted passwords under Midgard1. By setting ``authtype`` to ``Legacy``, you can migrate them unchanged.
+
+Run
+
+```sh
+./vendor/bin/openpsa-installer help midgard2:convert
 ```
 
 to see all available options.

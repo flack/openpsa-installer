@@ -6,8 +6,9 @@ $project_dir = dirname(dirname(dirname((dirname(__DIR__)))));
 require_once $project_dir . '/vendor/autoload.php';
 
 use Symfony\Component\Console\Application;
-use openpsa\installer\mgd2setup;
+use openpsa\installer\midgard2;
 
 $console = new Application('OpenPSA Installer', '1.0.0-dev');
-$console->add(new mgd2setup);
+$console->add(new midgard2\setup);
+$console->add(new midgard2\convert);
 $console->run();
