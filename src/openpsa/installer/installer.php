@@ -72,13 +72,7 @@ class installer extends base_installer
     public static function setup_root_package(Event $event)
     {
         $basedir = realpath('./');
-
-        $fs = new Filesystem;
-        $fs->ensureDirectoryExists($basedir . '/config');
-        $fs->ensureDirectoryExists($basedir . '/var/cache');
-        $fs->ensureDirectoryExists($basedir . '/var/rcs');
-        $fs->ensureDirectoryExists($basedir . '/var/blobs');
-        $fs->ensureDirectoryExists($basedir . '/var/log');
+        self::setup_project_directory($basedir);
 
         $linker = new linker($basedir, $event->getIO());
         $linker->install($basedir);
@@ -89,5 +83,15 @@ class installer extends base_installer
             $linker->link($prefix . 'midgard_auth_types.xml', self::$_sharedir . '/midgard_auth_types.xml');
             $linker->link($prefix . 'MidgardObjects.xml', self::$_sharedir . '/MidgardObjects.xml');
         }
+    }
+
+    public static function setup_project_directory($basedir)
+    {
+        $fs = new Filesystem;
+        $fs->ensureDirectoryExists($basedir . '/config');
+        $fs->ensureDirectoryExists($basedir . '/var/cache');
+        $fs->ensureDirectoryExists($basedir . '/var/rcs');
+        $fs->ensureDirectoryExists($basedir . '/var/blobs');
+        $fs->ensureDirectoryExists($basedir . '/var/log');
     }
 }

@@ -10,11 +10,14 @@ namespace openpsa\installer;
 
 use Composer\Util\Filesystem;
 use Composer\IO\ConsoleIO;
+use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Output\StreamOutput;
 
 /**
  * Sets up a mgd2 configuration and DB
@@ -52,10 +55,27 @@ class mgd2setup extends Command
      */
     protected $_basepath;
 
-    /**
-     * @var Composer\Util\Filesystem
-     */
-    protected $_fs;
+    public static function install($basepath, $dbtype = 'MySQL')
+    {
+        installer::setup_project_directory($basepath);
+        $app = new Application;
+        $app->add(new self);
+
+        $args = array
+        (
+            'command' => 'mgd2:setup',
+            '--dbtype' => $dbtype
+        );
+        $command = $app->find('mgd2:setup');
+        $command->set_basepath($basepath);
+
+        return $command->run(new ArrayInput($args), new StreamOutput(fopen('php://stdout', 'w')));
+    }
+
+    public function set_basepath($basepath)
+    {
+        $this->_basepath = $basepath;
+    }
 
     protected function configure()
     {
@@ -67,8 +87,11 @@ class mgd2setup extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->_basepath = realpath('./');
-        $this->_fs = new Filesystem;
+        if (empty($this->_basepath))
+        {
+            $this->_basepath = realpath('./');
+        }
+
         $this->_output = $output;
         $this->_input = $input;
         $config = $this->_load_config();
@@ -102,7 +125,7 @@ class mgd2setup extends Command
 
     private function _prepare_database(\midgard_config $config)
     {
-        $this->_output->writeln('Preparing storage <comment>(this may take a while)</comment>');
+        $this->_output->writeln('Preparing <info>' . $this->dbtype . '</info> storage <comment>(this may take a while)</comment>');
         $midgard = \midgard_connection::get_instance();
         $midgard->open_config($config);
         if (!$midgard->is_connected())
