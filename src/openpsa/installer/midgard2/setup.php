@@ -262,14 +262,12 @@ class setup extends Command
 
         foreach ($types as $type)
         {
-            if (\midgard_storage::class_storage_exists($type))
-            {
-                \midgard_storage::update_class_storage($type);
-            }
-            else
+            if (!\midgard_storage::class_storage_exists($type))
             {
                 \midgard_storage::create_class_storage($type);
             }
+            //For some reason, create misses some fields, so we call update unconditionally
+            \midgard_storage::update_class_storage($type);
             $progress->advance();
         }
         $progress->finish();
