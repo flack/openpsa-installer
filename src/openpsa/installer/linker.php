@@ -8,13 +8,14 @@
 
 namespace openpsa\installer;
 use Composer\IO\IOInterface;
+use Composer\Util\Filesystem;
 
 /**
  * Link management service
  *
  * @package openpsa.installer
  */
-class linker extends service
+class linker
 {
     private $_themes_dir = '/themes';
     private $_schemas_dir = '/schemas';
@@ -22,6 +23,18 @@ class linker extends service
     private $_schema_location = '/usr/share/midgard2/schema/';
 
     private $_readonly_behavior;
+
+    /**
+     * Default constructor
+     *
+     * @param string $basepath The root package path
+     * @param IOInterface $io Composer IO interface
+     */
+    public function __construct($basepath, IOInterface $io)
+    {
+        $this->_basepath = $basepath;
+        $this->_io = $io;
+    }
 
     /**
      * Package installation routine
@@ -215,8 +228,8 @@ class linker extends service
 
     private function _prepare_static_dir()
     {
-        $this->_prepare_dir($this->_basepath . '/web');
-        $this->_prepare_dir($this->_basepath . '/web/midcom-static');
+        $fs = new Filesystem;
+        $fs->ensureDirectoryExists($this->_basepath . '/web/midcom-static');
     }
 
     private function _get_relative_path($absolute_path)

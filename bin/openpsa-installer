@@ -1,0 +1,13 @@
+#!/usr/bin/env php
+<?php
+// we assume installed as dependency
+$project_dir = dirname(dirname(dirname((dirname(__DIR__)))));
+
+require_once $project_dir . '/vendor/autoload.php';
+
+use Symfony\Component\Console\Application;
+use openpsa\installer\mgd2setup;
+
+$console = new Application();
+$console->add(new mgd2setup);
+$console->run();

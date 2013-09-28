@@ -11,6 +11,7 @@ use Composer\Installer\LibraryInstaller as base_installer;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Script\Event;
+use Composer\Util\Filesystem;
 
 /**
  * Simple installer class. Runs standard Composer functionality attaches custom services where appropriate
@@ -19,6 +20,8 @@ use Composer\Script\Event;
  */
 class installer extends base_installer
 {
+    protected static $_sharedir = '/usr/share/midgard2';
+
     /**
      * {@inheritDoc}
      */
@@ -61,36 +64,30 @@ class installer extends base_installer
     }
 
     /**
-     * Links package resources to appropriate places
+     * Links package resources to appropriate places and creates
+     * the required directories inside the project directory
      *
      * @param Event $event The event we're called from
      */
     public static function setup_root_package(Event $event)
     {
         $basedir = realpath('./');
+
+        $fs = new Filesystem;
+        $fs->ensureDirectoryExists($basedir . '/config');
+        $fs->ensureDirectoryExists($basedir . '/var/cache');
+        $fs->ensureDirectoryExists($basedir . '/var/rcs');
+        $fs->ensureDirectoryExists($basedir . '/var/blobs');
+        $fs->ensureDirectoryExists($basedir . '/var/log');
+
         $linker = new linker($basedir, $event->getIO());
         $linker->install($basedir);
-    }
 
-    /**
-     * Prepares Midgard2 database
-     *
-     * @param Event $event The event we're called from
-     */
-    public static function prepare_database(Event $event)
-    {
-        if (!extension_loaded('midgard2'))
+        if (extension_loaded('midgard2'))
         {
-            $event->getIO()->write('<warning>DB setup is only supported on mgd2 at the moment, please do this manually if necessary</warning>');
-            return;
+            $prefix = $basedir . '/vendor/openpsa/installer/data/';
+            $linker->link($prefix . 'midgard_auth_types.xml', self::$_sharedir . '/midgard_auth_types.xml');
+            $linker->link($prefix . 'MidgardObjects.xml', self::$_sharedir . '/MidgardObjects.xml');
         }
-        $basedir = realpath('./');
-        $setup = new mgd2setup($basedir, $event->getIO());
-        if (getenv('OPENPSA_INSTALLER_DBTYPE'))
-        {
-            $setup->dbtype = getenv('OPENPSA_INSTALLER_DBTYPE');
-        }
-
-        $setup->run();
     }
 }

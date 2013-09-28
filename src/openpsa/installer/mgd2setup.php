@@ -7,84 +7,85 @@
  */
 
 namespace openpsa\installer;
-use Composer\IO\IOInterface;
+
+use Composer\Util\Filesystem;
 use Composer\IO\ConsoleIO;
-use Symfony\Component\Console\Input\ArgvInput;
-use Symfony\Component\Console\Output\ConsoleOutput;
-use Symfony\Component\Console\Helper\HelperSet;
-use Symfony\Component\Console\Helper\DialogHelper;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Sets up a mgd2 configuration and DB
  *
  * @package openpsa.installer
  */
-class mgd2setup extends service
+class mgd2setup extends Command
 {
+    /**
+     * @var string
+     */
     protected $_config_name;
+
+    /**
+     * @var Symfony\Component\Console\Output\InputInterface
+     */
+    protected $_input;
+
+    /**
+     * @var Symfony\Component\Console\Output\OutputInterface
+     */
+    protected $_output;
 
     protected $_sharedir = '/usr/share/midgard2';
 
-    public $dbtype;
+    /**
+     * @var string
+     */
+    protected $_dbtype;
 
-    public static function get($basepath)
+    /**
+     * The root package path
+     *
+     * @var string
+     */
+    protected $_basepath;
+
+    /**
+     * @var Composer\Util\Filesystem
+     */
+    protected $_fs;
+
+    protected function configure()
     {
-        $io = new ConsoleIO(new ArgvInput, new ConsoleOutput, new HelperSet(array(new DialogHelper)));
-        return new self($basepath, $io);
+        $this->setName('mgd2:setup')
+            ->setDescription('Prepare Midgard2 database and project directory')
+            ->addArgument('config', InputArgument::OPTIONAL, 'Full path to Midgard2 config file')
+            ->addOption('dbtype', null, InputOption::VALUE_REQUIRED, 'DB type', 'MySQL');
     }
 
-    public function run()
+    protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $this->_basepath = realpath('./');
+        $this->_fs = new Filesystem;
+        $this->_output = $output;
+        $this->_input = $input;
         $config = $this->_load_config();
         $this->_prepare_database($config);
     }
 
-    protected function _load_default($key = null)
-    {
-        $defaults = array();
-        $defaults_file = $this->_basepath . '/vendor/.openpsa_installer_defaults.php';
-        if (file_exists($defaults_file))
-        {
-            $defaults = json_decode(file_get_contents($defaults_file), true);
-        }
-
-        if (null !== $key)
-        {
-            if (array_key_exists($key, $defaults))
-            {
-                return $defaults[$key];
-            }
-            return null;
-        }
-        return $defaults;
-    }
-
-    protected function _save_default($key, $value)
-    {
-        $defaults = $this->_load_default();
-        $defaults_file = $this->_basepath . '/vendor/.openpsa_installer_defaults.php';
-        if (file_exists($defaults_file))
-        {
-            unlink($defaults_file);
-        }
-        $defaults[$key] = $value;
-        file_put_contents($defaults_file, json_encode($defaults));
-    }
-
     protected function _load_config()
     {
-        if (getenv('MIDCOM_MIDGARD_CONFIG_FILE'))
-        {
-            $config_file = getenv('MIDCOM_MIDGARD_CONFIG_FILE');
-        }
-        else
+        $config_file = $this->_input->getArgument('config');
+        if (!$config_file)
         {
             $config_file = $this->_basepath . "/config/midgard2.ini";
         }
 
         if (file_exists($config_file))
         {
-            $this->_io->write('Using config file found at <info>' . $config_file . '</info>');
+            $this->_output->writeln('Using config file found at <info>' . $config_file . '</info>');
             $config = new \midgard_config();
             if (!$config->read_file_at_path($config_file))
             {
@@ -101,7 +102,7 @@ class mgd2setup extends service
 
     private function _prepare_database(\midgard_config $config)
     {
-        $this->_io->write('Preparing storage <comment>(this may take a while)</comment>');
+        $this->_output->writeln('Preparing storage <comment>(this may take a while)</comment>');
         $midgard = \midgard_connection::get_instance();
         $midgard->open_config($config);
         if (!$midgard->is_connected())
@@ -113,6 +114,21 @@ class mgd2setup extends service
             throw new \Exception("Failed to create file attachment storage directory to {$config->blobdir}:" . $midgard->get_error_string());
         }
 
+        $re = new \ReflectionExtension('midgard2');
+        $classes = $re->getClasses();
+        $types = array();
+        foreach ($classes as $refclass)
+        {
+            if (!$refclass->isSubclassOf('midgard_object'))
+            {
+                continue;
+            }
+            $types[] = $refclass->getName();
+        }
+
+        $progress = $this->getHelperSet()->get('progress');
+        $progress->start($this->_output, count($types) + 1);
+
         // Create storage
         if (!\midgard_storage::create_base_storage())
         {
@@ -121,70 +137,53 @@ class mgd2setup extends service
                 throw new \Exception("Failed to create base database structures" . $midgard->get_error_string());
             }
         }
+        $progress->advance();
 
-        $re = new \ReflectionExtension('midgard2');
-        $classes = $re->getClasses();
-        foreach ($classes as $refclass)
+        foreach ($types as $type)
         {
-            if (!$refclass->isSubclassOf('midgard_object'))
-            {
-                continue;
-            }
-            $type = $refclass->getName();
-
             \midgard_storage::create_class_storage($type);
             \midgard_storage::update_class_storage($type);
+            $progress->advance();
         }
-        $this->_io->write('Storage created');
+        $progress->finish();
+
+        $this->_output->writeln('Storage created');
     }
 
     private function _get_db_type()
     {
-        if (!empty($this->dbtype))
+        $this->dbtype = $this->_input->getOption('dbtype');
+        if (empty($this->dbtype))
         {
-            return $this->dbtype;
+            $this->dbtype = $this->_ask('DB type:', 'MySQL', array('MySQL', 'SQLite'));
         }
-        return $this->_io->ask('<question>DB type:</question> [<comment>MySQL</comment>, SQLite] ', 'MySQL');
+        return $this->dbtype;
+    }
+
+    protected function _ask($question, $default, array $options = null)
+    {
+        $dialog = $this->getHelperSet()->get('dialog');
+        return $dialog->ask($this->_output, '<question>' . $question . '</question>', $default, $options);
+    }
+
+    protected function _ask_hidden($question)
+    {
+        $dialog = $this->getHelperSet()->get('dialog');
+        return $dialog->askHiddenResponse($this->_output, '<question>' . $question . '</question>', false);
     }
 
     private function _create_config($config_name)
     {
         $project_name = basename($this->_basepath);
-        $linker = new linker($this->_basepath, $this->_io);
-
-        $this->_prepare_dir($this->_basepath . '/config');
-        $this->_prepare_dir($this->_basepath . '/var');
-        $this->_prepare_dir($this->_basepath . '/var/cache');
-        $this->_prepare_dir($this->_basepath . '/var/rcs');
-        $this->_prepare_dir($this->_basepath . '/var/blobs');
-        $this->_prepare_dir($this->_basepath . '/var/log');
-
-        if (file_exists($this->_basepath . '/vendor/openpsa/midcom/'))
-        {
-            // openpsa installed as dependency
-            $openpsa_basedir = realpath($this->_basepath . '/vendor/openpsa/midcom/');
-        }
-        else
-        {
-            // openpsa installed as root package
-            $openpsa_basedir = realpath($this->_basepath);
-        }
-        // if custom paths are used, we might not be able to find openpsa dir. In this case, we simply hope that
-        // the files are in place already
-        if (file_exists($openpsa_basedir . '/config/midgard_auth_types.xml'))
-        {
-            $linker->link($openpsa_basedir . '/config/midgard_auth_types.xml', $this->_sharedir . '/midgard_auth_types.xml');
-            $linker->link($openpsa_basedir . '/config/MidgardObjects.xml', $this->_sharedir . '/MidgardObjects.xml');
-        }
 
         // Create a config file
         $config = new \midgard_config();
         $config->dbtype = $this->_get_db_type();
         if ($config->dbtype == 'MySQL')
         {
-            $config->dbuser = $this->_io->ask('<question>DB username:</question> [<comment>' . $project_name . '</comment>] ', $project_name);
-            $config->dbpass = $this->_io->askAndHideAnswer('<question>DB password:</question> ');
-            $config->database = $this->_io->ask('<question>DB name:</question> [<comment>' . $project_name . '</comment>] ', $project_name);
+            $config->dbuser = $this->_ask('DB username:', $project_name);
+            $config->dbpass = $this->_ask_hidden('DB password:');
+            $config->database = $this->_ask('DB name:', $project_name);
         }
         else if ($config->dbtype == 'SQLite')
         {
@@ -211,15 +210,16 @@ class mgd2setup extends service
 
         try
         {
+            $linker = new linker($this->_basepath, new ConsoleIO($this->_input, $this->_output, $this->getHelperSet()));
             $linker->link($target_path, $this->_basepath . '/config/midgard2.ini');
-            $this->_io->write("Configuration file <info>" . $target_path . "</info> created.");
+            $this->_output->writeln("Configuration file <info>" . $target_path . "</info> created.");
         }
         catch (\Exception $e)
         {
             // For some strange reason, this happens in Travis. But the config was created successfully
             // (according to save_file()'s return value anyways), and the link is not essential,
             // so we print an error and continue
-            $this->_io->write("Configuration file <info>" . $project_name . "</info> was successfully created, but could not be linked: <error>" . $e->getMessage() . "</error>");
+            $this->_output->writeln("Configuration file <info>" . $project_name . "</info> was successfully created, but could not be linked: <error>" . $e->getMessage() . "</error>");
         }
         return $config;
     }

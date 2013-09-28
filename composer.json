@@ -12,12 +12,14 @@
     ],
     "require": {
         "php": ">=5.3.0",
-        "composer/composer": "*"
+        "composer/composer": "*",
+        "symfony/console": "~2.3.0"
     },
     "minimum-stability": "dev",
     "autoload": {
         "psr-0": {"openpsa\\installer": "src/"}
     },
+    "bin": ["bin/openpsa-installer"],
     "extra": {
         "class": "openpsa\\installer\\installer"
     }
