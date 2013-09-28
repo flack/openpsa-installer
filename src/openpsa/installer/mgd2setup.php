@@ -125,7 +125,7 @@ class mgd2setup extends Command
 
     private function _prepare_database(\midgard_config $config)
     {
-        $this->_output->writeln('Preparing <info>' . $this->dbtype . '</info> storage <comment>(this may take a while)</comment>');
+        $this->_output->writeln('Preparing <info>' . $this->_get_db_type() . '</info> storage <comment>(this may take a while)</comment>');
         $midgard = \midgard_connection::get_instance();
         $midgard->open_config($config);
         if (!$midgard->is_connected())
@@ -175,12 +175,12 @@ class mgd2setup extends Command
 
     private function _get_db_type()
     {
-        $this->dbtype = $this->_input->getOption('dbtype');
-        if (empty($this->dbtype))
+        $this->_dbtype = $this->_input->getOption('dbtype');
+        if (empty($this->_dbtype))
         {
-            $this->dbtype = $this->_ask('DB type:', 'MySQL', array('MySQL', 'SQLite'));
+            $this->_dbtype = $this->_ask('DB type:', 'MySQL', array('MySQL', 'SQLite'));
         }
-        return $this->dbtype;
+        return $this->_dbtype;
     }
 
     protected function _ask($question, $default, array $options = null)
