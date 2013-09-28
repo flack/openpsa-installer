@@ -9,6 +9,7 @@
 namespace openpsa\installer\midgard2;
 
 use openpsa\installer\installer;
+use openpsa\installer\linker;
 use Composer\Util\Filesystem;
 use Composer\IO\ConsoleIO;
 use Symfony\Component\Console\Application;
@@ -67,7 +68,7 @@ class setup extends Command
             'command' => 'midgard2:setup',
             '--dbtype' => $dbtype
         );
-        $command = $app->find('mgd2:setup');
+        $command = $app->find('midgard2:setup');
         $command->set_basepath($basepath);
 
         return $command->run(new ArrayInput($args), new StreamOutput(fopen('php://stdout', 'w')));
@@ -107,13 +108,11 @@ class setup extends Command
     protected function _load_config()
     {
         $config_file = $this->_input->getArgument('config');
-        if (!$config_file)
+        if (   $config_file
+            && (  !file_exists($config_file)
+               || !is_file($config_file)))
         {
-            $config_file = $this->_basepath . "/config/midgard2.ini";
-        }
-        if (   !file_exists($config_file)
-            || !is_file($config_file))
-        {
+            //The working theory here is that input was a filename, rather than a path
             if (file_exists($this->_sharedir . '/' . $config_file))
             {
                 $config_file = $this->_sharedir . '/' . $config_file;
@@ -130,6 +129,10 @@ class setup extends Command
                     throw new \RuntimeException('Could not find config "' . $config_file . '"');
                 }
             }
+        }
+        else
+        {
+            $config_file = $this->_basepath . "/config/midgard2.ini";
         }
 
         $config = new \midgard_config;
