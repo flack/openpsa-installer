@@ -10,6 +10,7 @@ namespace openpsa\installer\midgard2;
 
 use openpsa\installer\installer;
 use openpsa\installer\linker;
+use midgard\introspection\helper;
 use Composer\Util\Filesystem;
 use Composer\IO\ConsoleIO;
 use Symfony\Component\Console\Application;
@@ -109,8 +110,8 @@ class setup extends Command
     {
         $config_file = $this->_input->getArgument('config');
         if (   $config_file
-            && (  !file_exists($config_file)
-               || !is_file($config_file)))
+            && (   !file_exists($config_file)
+                || !is_file($config_file)))
         {
             //The working theory here is that input was a filename, rather than a path
             if (file_exists($this->_sharedir . '/' . $config_file))
@@ -233,17 +234,9 @@ class setup extends Command
             throw new \Exception("Failed to create file attachment storage directory to {$this->_config->blobdir}:" . $midgard->get_error_string());
         }
 
-        $re = new \ReflectionExtension('midgard2');
-        $classes = $re->getClasses();
-        $types = array();
-        foreach ($classes as $refclass)
-        {
-            if (!$refclass->isSubclassOf('midgard_object'))
-            {
-                continue;
-            }
-            $types[] = $refclass->getName();
-        }
+        $helper = new helper;
+        $types = $helper->get_all_schemanames();
+
         //No idea why this has to be listed explicitly...
         $types[] = 'MidgardRepligard';
 
@@ -266,7 +259,7 @@ class setup extends Command
             {
                 \midgard_storage::create_class_storage($type);
             }
-            //For some reason, create misses some fields, so we call update unconditionally
+            //For some reason, create misses some fields under midgard2, so we call update unconditionally
             \midgard_storage::update_class_storage($type);
             $progress->advance();
         }

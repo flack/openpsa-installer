@@ -13,7 +13,8 @@
     "require": {
         "php": ">=5.3.0",
         "composer/composer": "*",
-        "symfony/console": "~2.3.0@stable"
+        "symfony/console": "~2.3.0@stable",
+        "openpsa/midgard-introspection": "dev-master"
     },
     "minimum-stability": "dev",
     "autoload": {
