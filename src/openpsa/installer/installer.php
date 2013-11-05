@@ -14,7 +14,7 @@ use Composer\Script\Event;
 use Composer\Util\Filesystem;
 
 /**
- * Simple installer class. Runs standard Composer functionality attaches custom services where appropriate
+ * Simple installer class. Runs standard Composer functionality and attaches custom services where appropriate
  *
  * @package openpsa.installer
  */

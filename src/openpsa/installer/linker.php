@@ -34,6 +34,15 @@ class linker
     {
         $this->_basepath = $basepath;
         $this->_io = $io;
+
+        if (   !extension_loaded('midgard')
+            && !extension_loaded('midgard2'))
+        {
+            $fs = new Filesystem;
+            $fs->ensureDirectoryExists($this->_basepath . '/var/schemas/');
+
+            $this->set_schema_location($this->_basepath . '/var/schemas/');
+        }
     }
 
     /**
@@ -83,6 +92,7 @@ class linker
             $this->_io->write('<warning>Unlinking schemas is not yet supported on mgd1, please do this manually if necessary</warning>');
             return;
         }
+
         $source = $repo_dir . $this->_schemas_dir;
         if (!is_dir($source))
         {
@@ -156,11 +166,12 @@ class linker
 
     private function _install_schemas($repo_dir)
     {
-        if (!extension_loaded('midgard2'))
+        if (extension_loaded('midgard'))
         {
-            $this->_io->write('<warning>Linking schemas is only supported on mgd2 right now, please do this manually if necessary</warning>');
+            $this->_io->write('<warning>Linking schemas is not supported on Midgard1 right now, please do this manually if necessary</warning>');
             return;
         }
+
         $source = $repo_dir . $this->_schemas_dir;
         if (!is_dir($source))
         {
