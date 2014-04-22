@@ -1,6 +1,6 @@
 {
     "name": "openpsa/installer",
-    "type": "composer-installer",
+    "type": "composer-plugin",
     "description": "Installer for OpenPSA components and projects",
     "license": "LGPL",
     "authors": [
@@ -12,9 +12,10 @@
     ],
     "require": {
         "php": ">=5.3.0",
-        "composer/composer": "*",
+        "composer/composer": "~1.0.0-alpha8",
         "symfony/console": "~2.3.0@stable",
-        "openpsa/midgard-introspection": "dev-master"
+        "openpsa/midgard-introspection": "dev-master",
+        "composer-plugin-api": "1.0.0"
     },
     "minimum-stability": "dev",
     "autoload": {
@@ -22,6 +23,6 @@
     },
     "bin": ["bin/openpsa-installer"],
     "extra": {
-        "class": "openpsa\\installer\\installer"
+        "class": "openpsa\\installer\\plugin"
     }
 }

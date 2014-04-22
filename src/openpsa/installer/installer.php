@@ -7,6 +7,7 @@
  */
 
 namespace openpsa\installer;
+
 use Composer\Installer\LibraryInstaller as base_installer;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
