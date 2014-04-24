@@ -126,6 +126,11 @@ abstract class base
     public function create_config()
     {
         $project_name = basename($this->_basepath);
+        // unittests
+        if ($project_name == "__output")
+        {
+            $project_name = basename(dirname(dirname($this->_basepath))) . "_test";
+        }
 
         // Create a config file
         $config = new \midgard_config();
