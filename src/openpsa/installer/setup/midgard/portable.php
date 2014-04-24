@@ -8,20 +8,6 @@
 
 namespace openpsa\installer\setup\midgard;
 
-use openpsa\installer\installer;
-use openpsa\installer\linker;
-use midgard\introspection\helper;
-use Composer\Util\Filesystem;
-use Composer\IO\ConsoleIO;
-use Symfony\Component\Console\Application;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Output\StreamOutput;
-
 use midgard\portable\driver;
 use midgard\portable\storage\connection;
 

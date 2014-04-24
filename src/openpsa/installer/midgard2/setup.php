@@ -9,10 +9,7 @@
 namespace openpsa\installer\midgard2;
 
 use openpsa\installer\installer;
-use openpsa\installer\linker;
 use midgard\introspection\helper;
-use Composer\Util\Filesystem;
-use Composer\IO\ConsoleIO;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
