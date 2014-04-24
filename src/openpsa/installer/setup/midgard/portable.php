@@ -32,7 +32,8 @@ use midgard\portable\storage\connection;
  */
 class portable extends \openpsa\installer\setup\base
 {
-    public function load_config()
+
+    public function prepare_connection()
     {
         $schema_dirs = array
         (
@@ -41,19 +42,15 @@ class portable extends \openpsa\installer\setup\base
         );
         $driver = new driver($schema_dirs, $this->_basepath . '/var', '');
 
-        $config = parent::load_config();
-
         $db_config = array(
-            'dbname' => $config->database,
-            'user' => $config->dbuser,
-            'password' => $config->dbpass,
+            'dbname' => $this->_config->database,
+            'user' => $this->_config->dbuser,
+            'password' => $this->_config->dbpass,
             'host' => 'localhost',
-            'driver' => ( ($config->dbtype == 'MySQL') ? "pdo_mysql" : "pdo_sqlite" )
+            'driver' => ( ($this->_config->dbtype == 'MySQL') ? "pdo_mysql" : "pdo_sqlite" )
         );
 
         connection::initialize($driver, $db_config);
-
-        return $config;
     }
 
 }

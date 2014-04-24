@@ -27,7 +27,7 @@ use Symfony\Component\Console\Output\StreamOutput;
  *
  * @package openpsa.installer
  */
-class base
+abstract class base
 {
     /**
      *
@@ -185,10 +185,7 @@ class base
         return $config;
     }
 
-    public function prepare_connection()
-    {
-        // do nothing
-    }
+    abstract public function prepare_connection();
 
     public function prepare_storage()
     {
