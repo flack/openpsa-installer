@@ -23,6 +23,11 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class convert extends setup
 {
+    /**
+     * @var midgard_config
+     */
+    protected $_config;
+
     protected $_dbtype = 'MySQL';
 
     public $multilang_tables = array
@@ -34,7 +39,7 @@ class convert extends setup
         'org_openpsa_products_product_group' => array('title', 'description'),
         'org_openpsa_products_product' => array('title', 'description'),
         'pageelement' => array('value'),
-        'page' => array('title', 'content', 'author', 'owner'),
+        'page' => array('title', 'content'),
         'snippet' => array('code', 'doc'),
     );
 
@@ -50,10 +55,11 @@ class convert extends setup
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->_initialize($input, $output);
+        $this->_config = $this->_setup->prepare_config();
 
         if (!$this->_input->getOption('skip-storage'))
         {
-            $this->_prepare_storage();
+            $this->_setup->prepare_storage();
         }
         else
         {
@@ -72,6 +78,7 @@ class convert extends setup
     private function _convert_tables()
     {
         $this->_output->writeln("\n<info>Copying data from multilang tables</info>");
+
         $db = mysqli_connect($this->_config->host, $this->_config->dbuser, $this->_config->dbpass, $this->_config->database);
         if (mysqli_connect_errno())
         {
@@ -125,7 +132,7 @@ class convert extends setup
     {
         if (!mysqli_query($db, $stmt))
         {
-            throw new \RuntimeException(mysqli_error($db));
+            throw new \RuntimeException(mysqli_error($db) . ' during query ' . $stmt);
         }
     }
 

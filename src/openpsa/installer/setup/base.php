@@ -71,7 +71,7 @@ abstract class base
     {
         $config_file = $this->_input->getArgument('config');
         if (   $config_file
-        && (   !file_exists($config_file)
+            && (   !file_exists($config_file)
                 || !is_file($config_file)))
         {
             //The working theory here is that input was a filename, rather than a path
@@ -102,6 +102,7 @@ abstract class base
     public function prepare_config()
     {
         $this->_config = $this->load_config();
+        return $this->_config;
     }
 
     public function load_config()

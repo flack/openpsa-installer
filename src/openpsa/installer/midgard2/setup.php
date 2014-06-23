@@ -27,17 +27,12 @@ use Symfony\Component\Console\Output\StreamOutput;
 class setup extends Command
 {
     /**
-     * @var midgard_config
-     */
-    protected $_config;
-
-    /**
-     * @var Symfony\Component\Console\Output\InputInterface
+     * @var InputInterface
      */
     protected $_input;
 
     /**
-     * @var Symfony\Component\Console\Output\OutputInterface
+     * @var OutputInterface
      */
     protected $_output;
 
@@ -96,15 +91,19 @@ class setup extends Command
     {
         if (extension_loaded('midgard'))
         {
-            throw new \Exception('Midgard1 is not supported. Please use dataguard instead.');
+            throw new \Exception('Midgard1 is not supported. Please use datagard instead.');
         }
 
-        $dbtype = $this->_input->getOption('dbtype');
-        if (empty($dbtype))
+        if ($this->_input->hasOption('dbtype'))
         {
-            $dbtype = $this->_ask('DB type:', 'MySQL', array('MySQL', 'SQLite'));
+            $dbtype = $this->_input->getOption('dbtype');
         }
         $helperset = $this->getHelperSet();
+        if (empty($dbtype))
+        {
+            $dialog = $helperset->get('dialog');
+            $dbtype = $dialog->ask($this->_output, '<question>DB type:</question>', 'MySQL', array('MySQL', 'SQLite'));
+        }
 
         if (extension_loaded('midgard2'))
         {
