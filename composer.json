@@ -18,8 +18,9 @@
         "composer-plugin-api": "1.0.0"
     },
     "minimum-stability": "dev",
+    "prefer-stable": true,
     "autoload": {
-        "psr-0": {"openpsa\\installer": "src/"}
+        "psr-4": {"openpsa\\installer\\": "src/"}
     },
     "bin": ["bin/openpsa-installer"],
     "extra": {
