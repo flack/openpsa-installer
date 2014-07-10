@@ -88,7 +88,8 @@ abstract class base
                 }
                 else
                 {
-                    throw new \RuntimeException('Could not find config "' . $config_file . '"');
+                    $this->_output->writeln("Configuration file <info>" . $config_file . "</info> not found.");
+                    return false;
                 }
             }
         }
