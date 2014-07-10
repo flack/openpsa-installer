@@ -23,9 +23,18 @@ class portable extends \openpsa\installer\setup\base
     {
         $schema_dirs = array
         (
-            $this->_basepath . '/schemas/',
-            $this->_basepath . '/config/'
+            $this->_basepath . '/var/schemas/',
         );
+
+        if (file_exists($this->_basepath . '/config/'))
+        {
+            $schema_dirs[] = $this->_basepath . '/config/';
+        }
+        if (file_exists($this->_basepath . '/vendor/openpsa/midcom/config/'))
+        {
+            $schema_dirs[] = $this->_basepath . '/vendor/openpsa/midcom/config/';
+        }
+
         $driver = new driver($schema_dirs, $this->_basepath . '/var', '');
 
         $db_config = array(
