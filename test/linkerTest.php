@@ -32,6 +32,8 @@ class linkerTest extends PHPUnit_Framework_TestCase
      */
     protected $io;
 
+    private $paths = array();
+
     protected function setUp()
     {
         $this->basedir = realpath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR . 'test-basedir-' . uniqid();
@@ -39,12 +41,27 @@ class linkerTest extends PHPUnit_Framework_TestCase
 
         $this->fs = new Filesystem;
         $this->fs->ensureDirectoryExists($this->basedir);
-        $this->fs->ensureDirectoryExists($this->basedir . DIRECTORY_SEPARATOR . 'static' . DIRECTORY_SEPARATOR . 'component.name');
-        $this->fs->ensureDirectoryExists($this->basedir . DIRECTORY_SEPARATOR . 'themes' . DIRECTORY_SEPARATOR . 'theme-name' . DIRECTORY_SEPARATOR . 'static');
 
-        $this->fs->ensureDirectoryExists($this->basedir . DIRECTORY_SEPARATOR . 'schemas_location');
-        $this->fs->ensureDirectoryExists($this->basedir . DIRECTORY_SEPARATOR . 'schemas');
-        touch($this->basedir . DIRECTORY_SEPARATOR . 'schemas' . DIRECTORY_SEPARATOR . 'component_name.xml');
+        $this->paths = array
+        (
+            'component_static' => $this->makepath(array('static', 'component.name')),
+            'theme_static' => $this->makepath(array('themes', 'theme-name', 'static')),
+            'vendor_static' => $this->makepath(array('vendor', 'openpsa' , 'test' , 'static', 'vendor.component'))
+        );
+
+        $this->fs->ensureDirectoryExists($this->paths['component_static']);
+        $this->fs->ensureDirectoryExists($this->paths['theme_static']);
+        $this->fs->ensureDirectoryExists($this->paths['vendor_static']);
+
+        $this->fs->ensureDirectoryExists($this->makepath(array('schemas_location')));
+        $this->fs->ensureDirectoryExists($this->makepath(array('schemas')));
+        touch($this->makepath(array('schemas', 'component_name.xml')));
+    }
+
+    private function makepath(array $parts)
+    {
+        array_unshift($parts, $this->basedir);
+        return implode(DIRECTORY_SEPARATOR, $parts);
     }
 
     protected function tearDown()
@@ -55,7 +72,7 @@ class linkerTest extends PHPUnit_Framework_TestCase
     private function _get_linker()
     {
         $linker = new linker($this->basedir, $this->io);
-        $linker->set_schema_location($this->basedir . DIRECTORY_SEPARATOR . 'schemas_location' . DIRECTORY_SEPARATOR);
+        $linker->set_schema_location($this->makepath(array('schemas_location')) . DIRECTORY_SEPARATOR);
         return $linker;
     }
 
@@ -64,25 +81,35 @@ class linkerTest extends PHPUnit_Framework_TestCase
         $linker = $this->_get_linker();
         $linker->install($this->basedir);
 
-        $this->assertFileExists($this->basedir . DIRECTORY_SEPARATOR . 'web');
-        $this->assertFileExists($this->basedir . DIRECTORY_SEPARATOR . 'web' . DIRECTORY_SEPARATOR . 'midcom-static');
-        $this->assertFileExists($this->basedir . DIRECTORY_SEPARATOR . 'web' . DIRECTORY_SEPARATOR . 'midcom-static' . DIRECTORY_SEPARATOR . 'component.name');
-        $this->assertFileExists($this->basedir . DIRECTORY_SEPARATOR . 'web' . DIRECTORY_SEPARATOR . 'midcom-static' . DIRECTORY_SEPARATOR . 'theme-name');
-        $this->assertFileExists($this->basedir . DIRECTORY_SEPARATOR . 'schemas_location' . DIRECTORY_SEPARATOR . 'component_name.xml');
+        $component_static_link = $this->makepath(array('web', 'midcom-static', 'component.name'));
+        $this->assertFileExists($component_static_link);
+        $this->assertSame(realpath($component_static_link), $this->paths['component_static']);
+        $this->assertFileExists($this->makepath(array('web', 'midcom-static', 'theme-name')));
+        $this->assertFileExists($this->makepath(array('schemas_location', 'component_name.xml')));
 
         $linker = $this->_get_linker();
         $linker->install($this->basedir);
     }
 
+    public function testInstall_vendor_static()
+    {
+        $linker = $this->_get_linker();
+        $linker->install($this->makepath(array('vendor', 'openpsa' , 'test')));
+
+        $vendor_static_link = $this->makepath(array('web', 'midcom-static', 'vendor.component'));
+        $this->assertFileExists($vendor_static_link);
+        $this->assertSame(realpath($vendor_static_link), $this->paths['vendor_static']);
+    }
+
     public function testInstall_incomplete_theme_dir()
     {
-        $this->fs->removeDirectory($this->basedir . DIRECTORY_SEPARATOR . 'themes' . DIRECTORY_SEPARATOR . 'theme-name' . DIRECTORY_SEPARATOR . 'static');
+        $this->fs->removeDirectory($this->makepath(array('themes', 'theme-name', 'static')));
 
         $linker = $this->_get_linker();
         $linker->install($this->basedir);
 
-        $this->assertFileExists($this->basedir . DIRECTORY_SEPARATOR . 'web' . DIRECTORY_SEPARATOR . 'midcom-static' . DIRECTORY_SEPARATOR . 'component.name');
-        $this->assertFileNotExists($this->basedir . DIRECTORY_SEPARATOR . 'web' . DIRECTORY_SEPARATOR . 'midcom-static' . DIRECTORY_SEPARATOR . 'theme-name');
+        $this->assertFileExists($this->makepath(array('web', 'midcom-static', 'component.name')));
+        $this->assertFileNotExists($this->makepath(array('web', 'midcom-static', 'theme-name')));
     }
 
     /**
@@ -96,8 +123,8 @@ class linkerTest extends PHPUnit_Framework_TestCase
         $linker = $this->_get_linker();
         $linker->uninstall($this->basedir);
 
-        $this->assertFileNotExists($this->basedir . DIRECTORY_SEPARATOR . 'web' . DIRECTORY_SEPARATOR . 'midcom-static' . DIRECTORY_SEPARATOR . 'component.name');
-        $this->assertFileNotExists($this->basedir . DIRECTORY_SEPARATOR . 'web' . DIRECTORY_SEPARATOR . 'midcom-static' . DIRECTORY_SEPARATOR . 'theme-name');
-        $this->assertFileNotExists($this->basedir . DIRECTORY_SEPARATOR . 'schemas_location' . DIRECTORY_SEPARATOR . 'component_name.xml');
+        $this->assertFileNotExists($this->makepath(array('web', 'midcom-static', 'component.name')));
+        $this->assertFileNotExists($this->makepath(array('web', 'midcom-static', 'theme-name')));
+        $this->assertFileNotExists($this->makepath(array('schemas_location', 'component_name.xml')));
     }
 }
