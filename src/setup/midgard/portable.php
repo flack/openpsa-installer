@@ -18,9 +18,14 @@ use midgard\portable\storage\connection;
  */
 class portable extends \openpsa\installer\setup\base
 {
-
     public function prepare_connection()
     {
+        if (   file_exists($this->_basepath . '/config/midgard-portable.inc.php')
+            && $this->_ask('Use existing configuration file <info>midgard-portable.inc.php</info> ?', 'y', array('y', 'n')) === 'y')
+        {
+            include $this->_basepath . '/config/midgard-portable.inc.php';
+            return;
+        }
         $schema_dirs = array
         (
             $this->_basepath . '/var/schemas/',
@@ -47,6 +52,5 @@ class portable extends \openpsa\installer\setup\base
 
         connection::initialize($driver, $db_config);
     }
-
 }
 ?>
