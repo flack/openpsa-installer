@@ -8,6 +8,7 @@
 
 namespace openpsa\installer\midgard2;
 
+use PDO;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -27,6 +28,11 @@ class convert extends setup
      * @var midgard_config
      */
     protected $_config;
+
+    /**
+     * @var PDO
+     */
+    private $pdo;
 
     protected $_dbtype = 'MySQL';
 
@@ -63,36 +69,36 @@ class convert extends setup
         }
         else
         {
-            $midgard = \midgard_connection::get_instance();
-            $midgard->open_config($this->_config);
-            if (!$midgard->is_connected())
-            {
-                throw new \Exception("Failed to open config {$this->_config->database}:" . $midgard->get_error_string());
-            }
+            $this->_setup->prepare_connection();
         }
+
+        $this->prepare_pdo();
         $this->_convert_tables();
         $this->_migrate_accounts();
         $this->_update_at_entries();
+    }
+
+    private function prepare_pdo()
+    {
+        if (!extension_loaded('midgard2'))
+        {
+            $this->pdo = \midgard\portable\storage\connection::get_em()->getConnection()->getWrappedConnection();
+            if ($this->pdo instanceof PDO)
+            {
+                return;
+            }
+        }
+        $this->pdo = new PDO('mysql:host=' . $this->_config->host . ';dbname=' . $this->_config->database . ';charset=utf8', $this->_config->dbuser, $this->_config->dbpass, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
     }
 
     private function _convert_tables()
     {
         $this->_output->writeln("\n<info>Copying data from multilang tables</info>");
 
-        $db = mysqli_connect($this->_config->host, $this->_config->dbuser, $this->_config->dbpass, $this->_config->database);
-        if (mysqli_connect_errno())
-        {
-            throw new \RuntimeException(mysqli_connect_error());
-        }
-
-        mysqli_set_charset($db, 'utf8');
-
-        $this->_run_query('SET NAMES utf8', $db);
-
         foreach ($this->multilang_tables as $table => $fields)
         {
-            if (   !$this->_verify_table($db, $table)
-                || !$this->_verify_table($db, $table . '_i'))
+            if (   !$this->_verify_table($table)
+                || !$this->_verify_table($table . '_i'))
             {
                 continue;
             }
@@ -107,33 +113,21 @@ class convert extends setup
 
             $stmt .= ' WHERE ' . $table . '_i.lang = 0 AND ' . $table . '_i.sid = ' . $table . '.id';
 
-            $this->_run_query($stmt, $db);
+            $this->pdo->exec($stmt);
         }
         //fix changed snippet parent property
-        $this->_run_query('UPDATE snippet SET snippetdir = up', $db);
+        $this->pdo->exec('UPDATE snippet SET snippetdir = up');
     }
 
-    private function _verify_table($db, $table)
+    private function _verify_table($table)
     {
-        $result = mysqli_query($db, 'SHOW TABLES LIKE "' . $table . '"');
-        if (!$result)
-        {
-            throw new \RuntimeException(mysqli_error($db));
-        }
-        if (mysqli_num_rows($result) == 0)
+        $result = $this->pdo->query('SHOW TABLES LIKE "' . $table . '"');
+        if (count($result) == 0)
         {
             $this->_output->writeln(' - Table <info>' . $this->_config->database . '.' . $table . '</info> could not be found, skipping');
             return false;
         }
         return true;
-    }
-
-    private function _run_query($stmt, $db)
-    {
-        if (!mysqli_query($db, $stmt))
-        {
-            throw new \RuntimeException(mysqli_error($db) . ' during query ' . $stmt);
-        }
     }
 
     /**
@@ -236,7 +230,6 @@ class convert extends setup
             $this->_output->writeln('   <comment>Setting admin flag</comment>');
         }
 
-
         try
         {
             $user->create();
@@ -253,19 +246,9 @@ class convert extends setup
         static $admingroups = null;
         if ($admingroups == null)
         {
-            $db = mysqli_connect($this->_config->host, $this->_config->dbuser, $this->_config->dbpass, $this->_config->database);
-            if (mysqli_connect_errno())
-            {
-                throw new \RuntimeException(mysqli_connect_error());
-            }
             $admingroups = array(0);
-            $stmt = 'SELECT admingroup FROM sitegroup';
-            $result = mysqli_query($db, 'SELECT admingroup FROM sitegroup');
-            if (!$result)
-            {
-                throw new \RuntimeException(mysqli_error($db));
-            }
-            while ($row = mysqli_fetch_assoc($result))
+            $stmt = $this->pdo->prepare('SELECT admingroup FROM sitegroup');
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC))
             {
                 $admingroups[] = (int) $row['admingroup'];
             }
