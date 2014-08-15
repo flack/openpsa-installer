@@ -24,6 +24,8 @@ class linker
 
     private $_readonly_behavior;
 
+    private $_basepath;
+
     /**
      * Default constructor
      *
