@@ -37,11 +37,11 @@ class installer extends base_installer
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
         $linker = new linker(dirname($this->vendorDir), $this->io);
-        $linker->uninstall($this->getPackageBasePath($initial));
+        $old_links = $linker->get_links($this->getPackageBasePath($initial));
 
         parent::update($repo, $initial, $target);
 
-        $linker->install($this->getPackageBasePath($target));
+        $linker->update($this->getPackageBasePath($target), $old_links);
     }
 
     /**

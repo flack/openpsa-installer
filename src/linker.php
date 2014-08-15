@@ -17,14 +17,16 @@ use Composer\Util\Filesystem;
  */
 class linker
 {
-    private $_themes_dir = '/themes';
-    private $_schemas_dir = '/schemas';
-    private $_static_dir = '/static';
-    private $_schema_location = '/usr/share/midgard2/schema/';
+    private $themes_dir = '/themes';
+    private $schemas_dir = '/schemas';
+    private $static_dir = '/static';
+    private $schema_location = '/usr/share/midgard2/schema/';
 
-    private $_readonly_behavior;
+    private $readonly_behavior;
 
-    private $_basepath;
+    private $basepath;
+
+    private $links = array();
 
     /**
      * Default constructor
@@ -34,17 +36,26 @@ class linker
      */
     public function __construct($basepath, IOInterface $io)
     {
-        $this->_basepath = $basepath;
-        $this->_io = $io;
+        $this->basepath = $basepath;
+        $this->io = $io;
 
         if (   !extension_loaded('midgard')
             && !extension_loaded('midgard2'))
         {
             $fs = new Filesystem;
-            $fs->ensureDirectoryExists($this->_basepath . '/var/schemas/');
+            $fs->ensureDirectoryExists($this->basepath . '/var/schemas/');
 
-            $this->set_schema_location($this->_basepath . '/var/schemas/');
+            $this->set_schema_location($this->basepath . '/var/schemas/');
         }
+    }
+
+    public function get_links($repo_dir)
+    {
+        $this->links = array();
+        $this->get_static_links($repo_dir);
+        $this->get_theme_links($repo_dir);
+        $this->get_schema_links($repo_dir);
+        return $this->links;
     }
 
     /**
@@ -54,9 +65,10 @@ class linker
      */
     public function install($path)
     {
-        $this->_install_statics($path);
-        $this->_install_themes($path);
-        $this->_install_schemas($path);
+        foreach ($this->get_links($path) as $linkdata)
+        {
+            $this->link($linkdata['target'], $linkdata['linkname'], $linkdata['target_path']);
+        }
     }
 
     /**
@@ -66,14 +78,43 @@ class linker
      */
     public function uninstall($path)
     {
-        $this->_uninstall_statics($path);
-        $this->_uninstall_themes($path);
-        $this->_uninstall_schemas($path);
+        foreach ($this->get_links($path) as $linkdata)
+        {
+            $this->unlink($linkdata['linkname']);
+        }
+    }
+
+    /**
+     * Package uninstallation routine
+     *
+     * @param string $path The package path
+     * @param array $oldlinks Existing links from the former package version
+     */
+    public function update($path, array $oldlinks)
+    {
+        foreach ($oldlinks as $linkdata)
+        {
+            $target_path = $linkdata['target_path'] ?: realpath($linkdata['target']);
+            if (!file_exists($target_path))
+            {
+                $this->unlink($linkdata['linkname']);
+            }
+        }
+        $this->install($path);
     }
 
     public function set_schema_location($path)
     {
-        $this->_schema_location = $path;
+        $this->schema_location = $path;
+    }
+
+    public function unlink($linkname)
+    {
+        if (is_link($linkname))
+        {
+            $this->io->write('Removing link <info>' . $linkname . '</info>');
+            @unlink($linkname);
+        }
     }
 
     /**
@@ -81,176 +122,9 @@ class linker
      *
      * @param string $target
      * @param string $linkname
+     * @param string $target_path
      */
-    public function link($target, $linkname)
-    {
-        $this->_link($target, $linkname);
-    }
-
-    private function _uninstall_schemas($repo_dir)
-    {
-        if (extension_loaded('midgard'))
-        {
-            $this->_io->write('<warning>Unlinking schemas is not yet supported on mgd1, please do this manually if necessary</warning>');
-            return;
-        }
-
-        $source = $repo_dir . $this->_schemas_dir;
-        if (!is_dir($source))
-        {
-            return;
-        }
-
-        $iterator = new \DirectoryIterator($source);
-        foreach ($iterator as $child)
-        {
-            if (   $child->getType() == 'file'
-                && substr($child->getFileName(), 0, 1) !== '.')
-            {
-                $this->_unlink($this->_schema_location . $child->getFilename());
-            }
-        }
-    }
-
-    private function _uninstall_themes($repo_dir)
-    {
-        $source = $repo_dir . $this->_themes_dir;
-        $target = $this->_basepath . '/web/midcom-static';
-
-        if (   !is_dir($source)
-            || !is_dir($target))
-        {
-            return;
-        }
-
-        $iterator = new \DirectoryIterator($source);
-        foreach ($iterator as $child)
-        {
-            if (   $child->getType() == 'dir'
-                && substr($child->getFileName(), 0, 1) !== '.'
-                && is_dir($child->getPathname()) . '/static')
-            {
-                $this->_unlink($target . '/' . $child->getFilename());
-            }
-        }
-    }
-
-    private function _uninstall_statics($repo_dir)
-    {
-        $source = $repo_dir . $this->_static_dir;
-        $target = $this->_basepath . '/web/midcom-static';
-
-        if (   !is_dir($source)
-            || !is_dir($target))
-        {
-            return;
-        }
-
-        $iterator = new \DirectoryIterator($source);
-        foreach ($iterator as $child)
-        {
-            if (   $child->getType() == 'dir'
-                && substr($child->getFileName(), 0, 1) !== '.')
-            {
-                $this->_unlink($target . '/' . $child->getFilename());
-            }
-        }
-    }
-
-    private function _unlink($linkname)
-    {
-        if (is_link($linkname))
-        {
-            $this->_io->write('Removing link <info>' . $linkname . '</info>');
-            @unlink($linkname);
-        }
-    }
-
-    private function _install_schemas($repo_dir)
-    {
-        if (extension_loaded('midgard'))
-        {
-            $this->_io->write('<warning>Linking schemas is not supported on Midgard1 right now, please do this manually if necessary</warning>');
-            return;
-        }
-
-        $source = $repo_dir . $this->_schemas_dir;
-        if (!is_dir($source))
-        {
-            return;
-        }
-
-        $iterator = new \DirectoryIterator($source);
-        foreach ($iterator as $child)
-        {
-            if (   $child->getType() == 'file'
-                && substr($child->getFileName(), 0, 1) !== '.'
-                && substr($child->getFilename(), -4) === '.xml')
-            {
-                $this->_link($child->getRealPath(), $this->_schema_location . $child->getFilename());
-            }
-        }
-    }
-
-    private function _install_themes($repo_dir)
-    {
-        $source = $repo_dir . $this->_themes_dir;
-        if (!is_dir($source))
-        {
-            return;
-        }
-        $this->_prepare_static_dir();
-        $target = $this->_basepath . '/web/midcom-static';
-
-        $iterator = new \DirectoryIterator($source);
-        foreach ($iterator as $child)
-        {
-            if (   $child->getType() == 'dir'
-                && substr($child->getFileName(), 0, 1) !== '.'
-                && is_dir($child->getPathname() . '/static'))
-            {
-                $absolute_path = $child->getPathname() . '/static';
-                $relative_path = $this->_get_relative_path($absolute_path);
-                $this->_link($relative_path, $target . '/' . $child->getFilename(), $absolute_path);
-            }
-        }
-    }
-
-    private function _install_statics($repo_dir)
-    {
-        $source = $repo_dir . $this->_static_dir;
-        if (!is_dir($source))
-        {
-            return;
-        }
-        $this->_prepare_static_dir();
-        $target = $this->_basepath . '/web/midcom-static';
-
-        $iterator = new \DirectoryIterator($source);
-        foreach ($iterator as $child)
-        {
-            if (   $child->getType() == 'dir'
-                && substr($child->getFileName(), 0, 1) !== '.')
-            {
-                $absolute_path = $child->getPathname();
-                $relative_path = $this->_get_relative_path($absolute_path);
-                $this->_link($relative_path, $target . '/' . $child->getFilename(), $absolute_path);
-            }
-        }
-    }
-
-    private function _prepare_static_dir()
-    {
-        $fs = new Filesystem;
-        $fs->ensureDirectoryExists($this->_basepath . '/web/midcom-static');
-    }
-
-    private function _get_relative_path($absolute_path)
-    {
-        return '../../' . substr($absolute_path, strlen($this->_basepath) + 1);
-    }
-
-    private function _link($target, $linkname, $target_path = null)
+    public function link($target, $linkname, $target_path = null)
     {
         if (null === $target_path)
         {
@@ -267,7 +141,7 @@ class linker
         {
             if (!file_exists(realpath($linkname)))
             {
-                $this->_io->write('Link in <info>' . basename($target) . '</info> points to nonexistant path, removing');
+                $this->io->write('Link in <info>' . basename($target) . '</info> points to nonexistent path, removing');
                 @unlink($linkname);
             }
             else
@@ -275,7 +149,7 @@ class linker
                 if (   realpath($linkname) !== $target_path
                     && md5_file(realpath($linkname)) !== md5_file($target_path))
                 {
-                    $this->_io->write('Skipping <info>' . basename($target) . '</info>: Found Link in <info>' . dirname($linkname) . '</info> to <comment>' . realpath($linkname) . '</comment>');
+                    $this->io->write('Skipping <info>' . basename($target) . '</info>: Found Link in <info>' . dirname($linkname) . '</info> to <comment>' . realpath($linkname) . '</comment>');
                 }
                 return;
             }
@@ -284,25 +158,25 @@ class linker
         {
             if (md5_file($linkname) !== md5_file($target_path))
             {
-                $this->_io->write('Skipping <info>' . basename($target) . '</info>: Found existing file in <comment>' . dirname($linkname) . '</comment>');
+                $this->io->write('Skipping <info>' . basename($target) . '</info>: Found existing file in <comment>' . dirname($linkname) . '</comment>');
             }
             return;
         }
 
         if (!is_writeable(dirname($linkname)))
         {
-            if ($this->_readonly_behavior === null)
+            if ($this->readonly_behavior === null)
             {
-                $this->_io->write('Directory <info>' . dirname($linkname) . '</info> is not writeable.');
-                $reply = $this->_io->ask('<question>Please choose:</question> [<comment>(S)udo</comment>, (I)gnore, (A)bort]', 'S');
-                $this->_readonly_behavior = strtolower(trim($reply));
+                $this->io->write('Directory <info>' . dirname($linkname) . '</info> is not writeable.');
+                $reply = $this->io->ask('<question>Please choose:</question> [<comment>(S)udo</comment>, (I)gnore, (A)bort]', 'S');
+                $this->readonly_behavior = strtolower(trim($reply));
             }
-            switch ($this->_readonly_behavior)
+            switch ($this->readonly_behavior)
             {
                 case 'a':
                     throw new \Exception('Aborted by user command');
                 case 'i':
-                    $this->_io->write('<info>Skipped linking ' . basename($linkname) . ' to ' . dirname($linkname) . '</info>');
+                    $this->io->write('<info>Skipped linking ' . basename($linkname) . ' to ' . dirname($linkname) . '</info>');
                     return;
                 case '':
                 case 's':
@@ -324,9 +198,106 @@ class linker
                 throw new \Exception('could not link ' . $target . ' to ' . $linkname . ': ' . $error['message']);
             }
         }
-        if ($this->_io->isVerbose())
+        if ($this->io->isVerbose())
         {
-            $this->_io->write('Linked <info>' . $target . '</info> to <comment>' . $linkname . '</comment>');
+            $this->io->write('Linked <info>' . $target . '</info> to <comment>' . $linkname . '</comment>');
         }
+    }
+
+    private function get_static_links($repo_dir)
+    {
+        $source = $repo_dir . $this->static_dir;
+        if (!is_dir($source))
+        {
+            return;
+        }
+        $this->prepare_static_dir();
+        $static_basedir = $this->basepath . '/web/midcom-static';
+
+        $iterator = new \DirectoryIterator($source);
+        foreach ($iterator as $child)
+        {
+            if (   $child->getType() == 'dir'
+                && substr($child->getFileName(), 0, 1) !== '.')
+            {
+                $absolute_path = $child->getPathname();
+                $this->links[] = array
+                (
+                    'target' => $this->get_relative_path($absolute_path),
+                    'linkname' => $static_basedir . '/' . $child->getFilename(),
+                    'target_path' => $absolute_path
+                );
+            }
+        }
+    }
+
+    private function get_theme_links($repo_dir)
+    {
+        $source = $repo_dir . $this->themes_dir;
+        if (!is_dir($source))
+        {
+            return;
+        }
+        $this->prepare_static_dir();
+        $static_basedir = $this->basepath . '/web/midcom-static';
+
+        $iterator = new \DirectoryIterator($source);
+        foreach ($iterator as $child)
+        {
+            if (   $child->getType() == 'dir'
+                && substr($child->getFileName(), 0, 1) !== '.'
+                && is_dir($child->getPathname() . '/static'))
+            {
+                $absolute_path = $child->getPathname() . '/static';
+                $this->links[] = array
+                (
+                    'target' => $this->get_relative_path($absolute_path),
+                    'linkname' => $static_basedir . '/' . $child->getFilename(),
+                    'target_path' => $absolute_path
+                );
+            }
+        }
+    }
+
+    private function get_schema_links($repo_dir)
+    {
+        if (extension_loaded('midgard'))
+        {
+            $this->io->write('<warning>Linking schemas is not supported on Midgard1 right now, please do this manually if necessary</warning>');
+            return;
+        }
+
+        $source = $repo_dir . $this->schemas_dir;
+        if (!is_dir($source))
+        {
+            return;
+        }
+
+        $iterator = new \DirectoryIterator($source);
+        foreach ($iterator as $child)
+        {
+            if (   $child->getType() == 'file'
+                && substr($child->getFileName(), 0, 1) !== '.'
+                && substr($child->getFilename(), -4) === '.xml')
+            {
+                $this->links[] = array
+                (
+                    'target' => $child->getRealPath(),
+                    'linkname' => $this->schema_location . $child->getFilename(),
+                    'target_path' => null
+                );
+            }
+        }
+    }
+
+    private function prepare_static_dir()
+    {
+        $fs = new Filesystem;
+        $fs->ensureDirectoryExists($this->basepath . '/web/midcom-static');
+    }
+
+    private function get_relative_path($absolute_path)
+    {
+        return '../../' . substr($absolute_path, strlen($this->basepath) + 1);
     }
 }
