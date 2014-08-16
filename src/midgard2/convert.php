@@ -244,9 +244,10 @@ class convert extends setup
         {
             $admingroups = array(0);
             $stmt = $this->pdo->prepare('SELECT admingroup FROM sitegroup');
-            while ($row = $stmt->fetch(PDO::FETCH_ASSOC))
+            $stmt->execute();
+            while ($col = $stmt->fetchColumn())
             {
-                $admingroups[] = (int) $row['admingroup'];
+                $admingroups[] = (int) $col;
             }
         }
 
