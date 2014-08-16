@@ -82,15 +82,12 @@ abstract class base
             else
             {
                 $prefix = getenv('HOME') . '/.midgard2/conf.d/';
-                if (file_exists($prefix . $config_file))
-                {
-                    $config_file = $prefix . $config_file;
-                }
-                else
+                if (!file_exists($prefix . $config_file))
                 {
                     $this->_output->writeln("Configuration file <info>" . $config_file . "</info> not found.");
                     return false;
                 }
+                $config_file = $prefix . $config_file;
             }
         }
         else
@@ -127,11 +124,15 @@ abstract class base
 
     public function create_config()
     {
-        $project_name = basename($this->_basepath);
-        // unittests
-        if ($project_name == "__output")
+        $project_name = $this->_input->getArgument('config');
+        if (!$project_name)
         {
-            $project_name = basename(dirname(dirname($this->_basepath))) . "_test";
+            $project_name = basename($this->_basepath);
+            // unittests
+            if ($project_name == "__output")
+            {
+                $project_name = basename(dirname(dirname($this->_basepath))) . "_test";
+            }
         }
 
         // Create a config file
