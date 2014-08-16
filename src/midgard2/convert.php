@@ -103,17 +103,13 @@ class convert extends setup
                 continue;
             }
 
-            $stmt = 'UPDATE ' . $table . ', ' . $table . '_i SET ';
-            $columns = array();
             foreach ($fields as $field)
             {
-                $columns[] = $table . '.' . $field . ' = ' . $table . '_i.' . $field;
+                $stmt = 'UPDATE ' . $table . ', ' . $table . '_i SET ';
+                $stmt .= $table . '.' . $field . ' = ' . $table . '_i.' . $field;
+                $stmt .= ' WHERE ' . $table . '_i.lang = 0 AND ' . $table . '_i.sid = ' . $table . '.id AND ' . $table . '.' . $field . ' = ""';
+                $this->pdo->exec($stmt);
             }
-            $stmt .= implode(', ', $columns);
-
-            $stmt .= ' WHERE ' . $table . '_i.lang = 0 AND ' . $table . '_i.sid = ' . $table . '.id';
-
-            $this->pdo->exec($stmt);
         }
         //fix changed snippet parent property
         $this->pdo->exec('UPDATE snippet SET snippetdir = up');
