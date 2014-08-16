@@ -8,7 +8,6 @@
 
 namespace openpsa\installer\setup;
 
-
 /**
  * Setup for mgd2
  *
@@ -28,4 +27,3 @@ class midgard2 extends \openpsa\installer\setup\base
         }
     }
 }
-?>

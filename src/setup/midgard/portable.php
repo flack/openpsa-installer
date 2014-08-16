@@ -53,4 +53,3 @@ class portable extends \openpsa\installer\setup\base
         connection::initialize($driver, $db_config);
     }
 }
-?>

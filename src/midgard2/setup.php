@@ -135,4 +135,3 @@ class setup extends Command
         $this->_setup->prepare_storage();
     }
 }
-?>

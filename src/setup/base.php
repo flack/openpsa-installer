@@ -250,4 +250,3 @@ abstract class base
         return $dialog->askHiddenResponse($this->_output, '<question>' . $question . '</question>', false);
     }
 }
-?>

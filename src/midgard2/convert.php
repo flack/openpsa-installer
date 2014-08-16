@@ -257,4 +257,3 @@ class convert extends setup
         return ($qb->count() > 0);
     }
 }
-?>
