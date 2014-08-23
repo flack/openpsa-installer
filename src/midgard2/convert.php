@@ -9,6 +9,7 @@
 namespace openpsa\installer\midgard2;
 
 use PDO;
+use midgard\introspection\helper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -72,23 +73,11 @@ class convert extends setup
             $this->_setup->prepare_connection();
         }
 
-        $this->prepare_pdo();
+        $helper = new helper;
+        $this->pdo = $helper->get_pdo();
         $this->_convert_tables();
         $this->_migrate_accounts();
         $this->_update_at_entries();
-    }
-
-    private function prepare_pdo()
-    {
-        if (!extension_loaded('midgard2'))
-        {
-            $this->pdo = \midgard\portable\storage\connection::get_em()->getConnection()->getWrappedConnection();
-            if ($this->pdo instanceof PDO)
-            {
-                return;
-            }
-        }
-        $this->pdo = new PDO('mysql:host=' . $this->_config->host . ';dbname=' . $this->_config->database . ';charset=utf8', $this->_config->dbuser, $this->_config->dbpass, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
     }
 
     private function _convert_tables()
