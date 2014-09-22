@@ -96,5 +96,6 @@ class installer extends base_installer
         $fs->ensureDirectoryExists($basedir . '/var/rcs');
         $fs->ensureDirectoryExists($basedir . '/var/blobs');
         $fs->ensureDirectoryExists($basedir . '/var/log');
+        $fs->ensureDirectoryExists($basedir . '/var/themes');
     }
 }

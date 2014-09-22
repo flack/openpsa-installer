@@ -240,21 +240,34 @@ class linker
         }
         $this->prepare_static_dir();
         $static_basedir = $this->basepath . '/web/midcom-static';
+        $themes_dir = $this->basepath . '/var/themes';
 
         $iterator = new \DirectoryIterator($source);
         foreach ($iterator as $child)
         {
             if (   $child->getType() == 'dir'
                 && substr($child->getFileName(), 0, 1) !== '.'
-                && is_dir($child->getPathname() . '/static'))
+            )
             {
-                $absolute_path = $child->getPathname() . '/static';
-                $this->links[] = array
-                (
+                // link theme
+                $absolute_path = $child->getPathname();
+                $this->links[] = array(
                     'target' => $this->get_relative_path($absolute_path),
-                    'linkname' => $static_basedir . '/' . $child->getFilename(),
+                    'linkname' => $themes_dir . '/' . $child->getFilename(),
                     'target_path' => $absolute_path
                 );
+
+                // link themes "static" folder
+                if (is_dir($child->getPathname() . '/static'))
+                {
+                    $absolute_path = $child->getPathname() . '/static';
+                    $this->links[] = array
+                    (
+                        'target' => $this->get_relative_path($absolute_path),
+                        'linkname' => $static_basedir . '/' . $child->getFilename(),
+                        'target_path' => $absolute_path
+                    );
+                }
             }
         }
     }
@@ -296,8 +309,8 @@ class linker
         $fs->ensureDirectoryExists($this->basepath . '/web/midcom-static');
     }
 
-    private function get_relative_path($absolute_path)
+    private function get_relative_path($absolute_path, $updir_count = 2)
     {
-        return '../../' . substr($absolute_path, strlen($this->basepath) + 1);
+        return str_repeat('../', $updir_count) . substr($absolute_path, strlen($this->basepath) + 1);
     }
 }
