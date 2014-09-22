@@ -42,9 +42,7 @@ class linker
         if (   !extension_loaded('midgard')
             && !extension_loaded('midgard2'))
         {
-            $fs = new Filesystem;
-            $fs->ensureDirectoryExists($this->basepath . '/var/schemas/');
-
+            $this->prepare_dir('var/schemas');
             $this->set_schema_location($this->basepath . '/var/schemas/');
         }
     }
@@ -211,7 +209,7 @@ class linker
         {
             return;
         }
-        $this->prepare_static_dir();
+        $this->prepare_dir('web/midcom-static');
         $static_basedir = $this->basepath . '/web/midcom-static';
 
         $iterator = new \DirectoryIterator($source);
@@ -238,7 +236,8 @@ class linker
         {
             return;
         }
-        $this->prepare_static_dir();
+        $this->prepare_dir('web/midcom-static');
+        $this->prepare_dir('var/themes');
         $static_basedir = $this->basepath . '/web/midcom-static';
         $themes_dir = $this->basepath . '/var/themes';
 
@@ -246,8 +245,7 @@ class linker
         foreach ($iterator as $child)
         {
             if (   $child->getType() == 'dir'
-                && substr($child->getFileName(), 0, 1) !== '.'
-            )
+                && substr($child->getFileName(), 0, 1) !== '.')
             {
                 // link theme
                 $absolute_path = $child->getPathname();
@@ -303,10 +301,10 @@ class linker
         }
     }
 
-    private function prepare_static_dir()
+    private function prepare_dir($dir)
     {
         $fs = new Filesystem;
-        $fs->ensureDirectoryExists($this->basepath . '/web/midcom-static');
+        $fs->ensureDirectoryExists($this->basepath . '/' . $dir);
     }
 
     private function get_relative_path($absolute_path, $updir_count = 2)
