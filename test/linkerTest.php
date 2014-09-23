@@ -72,7 +72,7 @@ class linkerTest extends PHPUnit_Framework_TestCase
     private function _get_linker()
     {
         $linker = new linker($this->basedir, $this->io);
-        $linker->set_schema_location($this->makepath(array('schemas_location')) . DIRECTORY_SEPARATOR);
+        $linker->set_schema_location($this->makepath(array('var', 'schemas')) . DIRECTORY_SEPARATOR);
         return $linker;
     }
 
@@ -85,7 +85,7 @@ class linkerTest extends PHPUnit_Framework_TestCase
         $this->assertFileExists($component_static_link);
         $this->assertSame(realpath($component_static_link), $this->paths['component_static']);
         $this->assertFileExists($this->makepath(array('web', 'midcom-static', 'theme-name')));
-        $this->assertFileExists($this->makepath(array('schemas_location', 'component_name.xml')));
+        $this->assertFileExists($this->makepath(array('var', 'schemas', 'component_name.xml')));
         $themes_link = $this->makepath(array('var', 'themes', 'theme-name'));
         $this->assertFileExists($themes_link);
         $this->assertSame(dirname($this->paths['theme_static']), realpath($themes_link));

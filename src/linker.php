@@ -291,11 +291,22 @@ class linker
                 && substr($child->getFileName(), 0, 1) !== '.'
                 && substr($child->getFilename(), -4) === '.xml')
             {
+                $absolute_path = $child->getRealPath();
+                if (!extension_loaded('midgard2'))
+                {
+                    //in midgard-portable, we link to our own var dir, so we can use relative links
+                    $target = $this->get_relative_path($absolute_path);
+                }
+                else
+                {
+                    $target = $absolute_path;
+                    $absolute_path = null;
+                }
                 $this->links[] = array
                 (
-                    'target' => $child->getRealPath(),
+                    'target' => $target,
                     'linkname' => $this->schema_location . $child->getFilename(),
-                    'target_path' => null
+                    'target_path' => $absolute_path
                 );
             }
         }
