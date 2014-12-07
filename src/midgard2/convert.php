@@ -107,7 +107,7 @@ class convert extends setup
     private function _verify_table($table)
     {
         $result = $this->pdo->query('SHOW TABLES LIKE "' . $table . '"');
-        if (count($result) == 0)
+        if ($result->rowCount() == 0)
         {
             $this->_output->writeln(' - Table <info>' . $this->_config->database . '.' . $table . '</info> could not be found, skipping');
             return false;
