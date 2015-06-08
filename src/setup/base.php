@@ -12,7 +12,7 @@ use openpsa\installer\linker;
 use Composer\IO\ConsoleIO;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-
+use Symfony\Component\Console\Helper\ProgressBar;
 
 /**
  * Base class for setup implementations
@@ -210,7 +210,7 @@ abstract class base
         // no idea why this has to be listed explicitly...
         $types[] = 'MidgardRepligard';
 
-        $progress = $this->_helperset->get('progress');
+        $progress = new ProgressBar($this->_output);
         $progress->start($this->_output, count($types) + 2);
 
         // create storage
