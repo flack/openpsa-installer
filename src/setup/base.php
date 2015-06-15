@@ -211,7 +211,7 @@ abstract class base
         $types[] = 'MidgardRepligard';
 
         $progress = new ProgressBar($this->_output);
-        $progress->start($this->_output, count($types) + 2);
+        $progress->start(count($types) + 2);
 
         // create storage
         if (!\midgard_storage::create_base_storage())
