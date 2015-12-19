@@ -36,7 +36,7 @@ class linkerTest extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->basedir = realpath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR . 'test-basedir-' . uniqid();
+        $this->basedir = realpath(__DIR__) . DIRECTORY_SEPARATOR . 'test-basedir-' . uniqid();
         $this->io = $this->getMock('Composer\IO\IOInterface');
 
         $this->fs = new Filesystem;

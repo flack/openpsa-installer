@@ -64,7 +64,7 @@ class installerTest extends PHPUnit_Framework_TestCase
     {
         $this->fs = new Filesystem;
 
-        $this->vendorDir = realpath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR . 'composer-test-vendor';
+        $this->vendorDir = realpath(__DIR__) . DIRECTORY_SEPARATOR . 'composer-test-vendor';
         $this->fs->ensureDirectoryExists($this->vendorDir);
 
         $this->composer = new Composer();
