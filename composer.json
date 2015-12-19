@@ -2,7 +2,7 @@
     "name": "openpsa/installer",
     "type": "composer-plugin",
     "description": "Installer for OpenPSA components and projects",
-    "license": "LGPL",
+    "license": "LGPL-2.1",
     "authors": [
         {
             "name": "Andreas Flack",
@@ -14,7 +14,7 @@
         "php": ">=5.3.0",
         "composer/composer": "~1.0.0-alpha10",
         "symfony/console": ">=2.3.0",
-        "openpsa/midgard-introspection": "dev-master",
+        "openpsa/midgard-introspection": "^1.0",
         "composer-plugin-api": "^1.0"
     },
     "minimum-stability": "dev",
