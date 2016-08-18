@@ -9,7 +9,6 @@
 namespace openpsa\installer\midgard2;
 
 use openpsa\installer\installer;
-use midgard\introspection\helper;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -18,6 +17,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 
 /**
  * Sets up a mgd2 configuration and DB
@@ -87,7 +87,7 @@ class setup extends Command
             ->addOption('dbtype', null, InputOption::VALUE_REQUIRED, 'DB type', 'MySQL');
     }
 
-    private function _get_setup_strategy()
+    private function get_setup_strategy()
     {
         if (extension_loaded('midgard'))
         {
@@ -101,8 +101,9 @@ class setup extends Command
         $helperset = $this->getHelperSet();
         if (empty($dbtype))
         {
-            $dialog = $helperset->get('dialog');
-            $dbtype = $dialog->ask($this->_output, '<question>DB type:</question>', 'MySQL', array('MySQL', 'SQLite'));
+            $dialog = $helperset->get('question');
+            $question = new ChoiceQuestion('<question>DB type:</question>', array('MySQL', 'SQLite'), 0);
+            $dbtype = $dialog->ask($this->_input, $this->_output, $question);
         }
 
         if (extension_loaded('midgard2'))
@@ -124,7 +125,7 @@ class setup extends Command
         $this->_output = $output;
         $this->_input = $input;
 
-        $this->_setup = $this->_get_setup_strategy();
+        $this->_setup = $this->get_setup_strategy();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
