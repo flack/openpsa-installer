@@ -179,7 +179,7 @@ class convert extends setup
         $user->authtype = \midcom::get('config')->get('auth_type');
         $db_password = $person->password;
 
-        $this->_output->writeln("\n - Processing user <info>" . $person->username . "</info>");
+        $this->_output->writeln("Processing user <info>" . $person->username . "</info>");
 
         if (substr($person->password, 0, 2) == '**')
         {
