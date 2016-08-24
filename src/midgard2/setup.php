@@ -17,7 +17,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
-use Symfony\Component\Console\Question\ChoiceQuestion;
 
 /**
  * Sets up a mgd2 configuration and DB
@@ -94,24 +93,14 @@ class setup extends Command
             throw new \Exception('Midgard1 is not supported. Please use datagard instead.');
         }
 
-        if ($this->_input->hasOption('dbtype'))
-        {
-            $dbtype = $this->_input->getOption('dbtype');
-        }
         $helperset = $this->getHelperSet();
-        if (empty($dbtype))
-        {
-            $dialog = $helperset->get('question');
-            $question = new ChoiceQuestion('<question>DB type:</question>', array('MySQL', 'SQLite'), 0);
-            $dbtype = $dialog->ask($this->_input, $this->_output, $question);
-        }
 
         if (extension_loaded('midgard2'))
         {
-            return new \openpsa\installer\setup\midgard2($this->_input, $this->_output, $this->_basepath, $this->_sharedir, $dbtype, $helperset);
+            return new \openpsa\installer\setup\midgard2($this->_input, $this->_output, $this->_basepath, $this->_sharedir, $helperset);
         }
         $this->_output->writeln("<info>Running setup for midgard-portable</info>");
-        return new \openpsa\installer\setup\midgard\portable($this->_input, $this->_output, $this->_basepath, $this->_sharedir, $dbtype, $helperset);
+        return new \openpsa\installer\setup\midgard\portable($this->_input, $this->_output, $this->_basepath, $this->_sharedir, $helperset);
     }
 
     protected function _initialize(InputInterface $input, OutputInterface $output)

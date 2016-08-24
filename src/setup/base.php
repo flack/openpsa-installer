@@ -50,23 +50,16 @@ abstract class base
      */
     protected $_sharedir;
 
-    /**
-     *
-     * @var string
-     */
-    protected $_dbtype;
-
     protected $_helperset;
 
     protected $_config = null;
 
-    public function __construct(InputInterface $input, OutputInterface $output, $basepath, $sharedir, $dbtype, $helperset)
+    public function __construct(InputInterface $input, OutputInterface $output, $basepath, $sharedir, $helperset)
     {
         $this->_input = $input;
         $this->_output = $output;
         $this->_basepath = $basepath;
         $this->_sharedir = $sharedir;
-        $this->_dbtype = $dbtype;
         $this->_helperset = $helperset;
     }
 
@@ -138,11 +131,22 @@ abstract class base
             }
         }
 
+        if ($this->_input->hasOption('dbtype'))
+        {
+            $dbtype = $this->_input->getOption('dbtype');
+        }
+        if (empty($dbtype))
+        {
+            $dialog = $this->_helperset->get('question');
+            $question = new ChoiceQuestion('<question>DB type:</question>', array('MySQL', 'SQLite'), 0);
+            $dbtype = $dialog->ask($this->_input, $this->_output, $question);
+        }
+
         // Create a config file
         $config = new \midgard_config();
-        $config->dbtype = $this->_dbtype;
+        $config->dbtype = $dbtype;
 
-        if ($this->_dbtype == 'MySQL')
+        if ($config->dbtype == 'MySQL')
         {
             $config->dbuser = $this->_ask('DB username:', $project_name);
             $config->dbpass = $this->_ask_hidden('DB password:');

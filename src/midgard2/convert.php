@@ -35,8 +35,6 @@ class convert extends setup
      */
     private $pdo;
 
-    protected $_dbtype = 'MySQL';
-
     public $multilang_tables = array
     (
         'topic' => array('title', 'extra', 'description'),
