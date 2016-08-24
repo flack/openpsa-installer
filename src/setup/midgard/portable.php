@@ -21,7 +21,7 @@ class portable extends \openpsa\installer\setup\base
     public function prepare_connection()
     {
         if (   file_exists($this->_basepath . '/config/midgard-portable.inc.php')
-            && $this->_ask('Use existing configuration file <info>midgard-portable.inc.php</info> ?', 'y', array('y', 'n')) === 'y')
+            && $this->_ask('Use existing configuration file <info>midgard-portable.inc.php</info> ?', true))
         {
             include $this->_basepath . '/config/midgard-portable.inc.php';
             return;

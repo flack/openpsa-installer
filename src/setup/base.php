@@ -13,6 +13,9 @@ use Composer\IO\ConsoleIO;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\Console\Question\Question;
+use Symfony\Component\Console\Question\ChoiceQuestion;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 
 /**
  * Base class for setup implementations
@@ -238,15 +241,26 @@ abstract class base
         $this->_output->writeln('Storage created');
     }
 
-    protected function _ask($question, $default, array $options = null)
+    protected function _ask($question, $default)
     {
-        $dialog = $this->_helperset->get('dialog');
-        return $dialog->ask($this->_output, '<question>' . $question . '</question>', $default, $options);
+        $dialog = $this->_helperset->get('question');
+        if (is_bool($default))
+        {
+            $question = new ConfirmationQuestion('<question>' . $question . '</question>', $default);
+        }
+        else
+        {
+            $question = new Question('<question>' . $question . '</question>', $default);
+        }
+        return $dialog->ask($this->_input, $this->_output, $question);
     }
 
     protected function _ask_hidden($question)
     {
-        $dialog = $this->_helperset->get('dialog');
-        return $dialog->askHiddenResponse($this->_output, '<question>' . $question . '</question>', false);
+        $dialog = $this->_helperset->get('question');
+        $question = new Question('<question>' . $question . '</question>');
+        $pw_question->setHidden(true);
+        $pw_question->setHiddenFallback(false);
+        return $dialog->ask($this->_input, $this->_output, $question);
     }
 }
