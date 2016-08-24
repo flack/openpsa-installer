@@ -259,8 +259,8 @@ abstract class base
     {
         $dialog = $this->_helperset->get('question');
         $question = new Question('<question>' . $question . '</question>');
-        $pw_question->setHidden(true);
-        $pw_question->setHiddenFallback(false);
+        $question->setHidden(true);
+        $question->setHiddenFallback(false);
         return $dialog->ask($this->_input, $this->_output, $question);
     }
 }
