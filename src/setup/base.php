@@ -242,7 +242,7 @@ abstract class base
         }
         $progress->finish();
 
-        $this->_output->writeln('Storage created');
+        $this->_output->writeln("\nStorage created");
     }
 
     protected function _ask($question, $default)
