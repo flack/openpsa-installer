@@ -68,26 +68,19 @@ abstract class base
         $config_file = $this->_input->getArgument('config');
         if (   $config_file
             && (   !file_exists($config_file)
-                || !is_file($config_file)))
-        {
+                || !is_file($config_file))) {
             //The working theory here is that input was a filename, rather than a path
-            if (file_exists($this->_sharedir . '/' . $config_file))
-            {
+            if (file_exists($this->_sharedir . '/' . $config_file)) {
                 $config_file = $this->_sharedir . '/' . $config_file;
-            }
-            else
-            {
+            } else {
                 $prefix = getenv('HOME') . '/.midgard2/conf.d/';
-                if (!file_exists($prefix . $config_file))
-                {
+                if (!file_exists($prefix . $config_file)) {
                     $this->_output->writeln("Configuration file <info>" . $config_file . "</info> not found.");
                     return false;
                 }
                 $config_file = $prefix . $config_file;
             }
-        }
-        else
-        {
+        } else {
             $config_file = $this->_basepath . "/config/midgard2.ini";
         }
         return $config_file;
@@ -103,16 +96,14 @@ abstract class base
     {
         $config_file = $this->_determine_config_path();
         // no config so far...
-        if (!file_exists($config_file))
-        {
+        if (!file_exists($config_file)) {
             return $this->create_config();
         }
 
         $this->_output->writeln('Using config file found at <info>' . $config_file . '</info>');
 
         $config = new \midgard_config;
-        if (!$config->read_file_at_path($config_file))
-        {
+        if (!$config->read_file_at_path($config_file)) {
             throw new \Exception('Could not read config file ' . $config_file);
         }
         return $config;
@@ -121,22 +112,18 @@ abstract class base
     public function create_config()
     {
         $project_name = $this->_input->getArgument('config');
-        if (!$project_name)
-        {
+        if (!$project_name) {
             $project_name = basename($this->_basepath);
             // unittests
-            if ($project_name == "__output")
-            {
+            if ($project_name == "__output") {
                 $project_name = basename(dirname(dirname($this->_basepath))) . "_test";
             }
         }
 
-        if ($this->_input->hasOption('dbtype'))
-        {
+        if ($this->_input->hasOption('dbtype')) {
             $dbtype = $this->_input->getOption('dbtype');
         }
-        if (empty($dbtype))
-        {
+        if (empty($dbtype)) {
             $dialog = $this->_helperset->get('question');
             $question = new ChoiceQuestion('<question>DB type:</question>', array('MySQL', 'SQLite'), 0);
             $dbtype = $dialog->ask($this->_input, $this->_output, $question);
@@ -146,19 +133,14 @@ abstract class base
         $config = new \midgard_config();
         $config->dbtype = $dbtype;
 
-        if ($config->dbtype == 'MySQL')
-        {
+        if ($config->dbtype == 'MySQL') {
             $config->dbuser = $this->_ask('DB username:', $project_name);
             $config->dbpass = $this->_ask_hidden('DB password:');
             $config->database = $this->_ask('DB name:', $project_name);
-        }
-        else if ($config->dbtype == 'SQLite')
-        {
+        } elseif ($config->dbtype == 'SQLite') {
             $config->dbdir = $this->_basepath . '/var';
             $config->database = $project_name;
-        }
-        else
-        {
+        } else {
             throw new \Exception('Unsupported DB type ' . $config->dbtype);
         }
 
@@ -171,19 +153,15 @@ abstract class base
 
         $target_path = getenv('HOME') . '/.midgard2/conf.d/' . $project_name;
 
-        if (!$config->save_file($project_name, true))
-        {
+        if (!$config->save_file($project_name, true)) {
             throw new \Exception("Failed to save config file " . $target_path);
         }
 
-        try
-        {
+        try {
             $linker = new linker($this->_basepath, new ConsoleIO($this->_input, $this->_output, $this->_helperset));
             $linker->link($target_path, $this->_basepath . '/config/midgard2.ini');
             $this->_output->writeln("Configuration file <info>" . $target_path . "</info> created.");
-        }
-        catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             // For some strange reason, this happens in Travis. But the config was created successfully
             // (according to save_file()'s return value anyways), and the link is not essential,
             // so we print an error and continue
@@ -196,8 +174,7 @@ abstract class base
 
     public function prepare_storage()
     {
-        if (is_null($this->_config))
-        {
+        if (is_null($this->_config)) {
             throw new \Exception("No config loaded");
         }
 
@@ -206,8 +183,7 @@ abstract class base
         $midgard = \midgard_connection::get_instance();
         $this->_output->writeln('Preparing <info>' . $this->_config->dbtype . '</info> storage <comment>(this may take a while)</comment>');
 
-        if (!$this->_config->create_blobdir())
-        {
+        if (!$this->_config->create_blobdir()) {
             throw new \Exception("Failed to create file attachment storage directory to {$this->_config->blobdir}:" . $midgard->get_error_string());
         }
 
@@ -221,19 +197,15 @@ abstract class base
         $progress->start(count($types) + 2);
 
         // create storage
-        if (!\midgard_storage::create_base_storage())
-        {
-            if ($midgard->get_error_string() != 'MGD_ERR_OK')
-            {
+        if (!\midgard_storage::create_base_storage()) {
+            if ($midgard->get_error_string() != 'MGD_ERR_OK') {
                 throw new \Exception("Failed to create base database structures" . $midgard->get_error_string());
             }
         }
         $progress->advance();
 
-        foreach ($types as $type)
-        {
-            if (!\midgard_storage::class_storage_exists($type))
-            {
+        foreach ($types as $type) {
+            if (!\midgard_storage::class_storage_exists($type)) {
                 \midgard_storage::create_class_storage($type);
             }
             // for some reason, create misses some fields under midgard2, so we call update unconditionally
@@ -248,12 +220,9 @@ abstract class base
     protected function _ask($question, $default)
     {
         $dialog = $this->_helperset->get('question');
-        if (is_bool($default))
-        {
+        if (is_bool($default)) {
             $question = new ConfirmationQuestion('<question>' . $question . '</question>', $default);
-        }
-        else
-        {
+        } else {
             $question = new Question('<question>' . $question . '</question>', $default);
         }
         return $dialog->ask($this->_input, $this->_output, $question);

@@ -21,22 +21,18 @@ class portable extends \openpsa\installer\setup\base
     public function prepare_connection()
     {
         if (   file_exists($this->_basepath . '/config/midgard-portable.inc.php')
-            && $this->_ask('Use existing configuration file <info>midgard-portable.inc.php</info> ?', true))
-        {
+            && $this->_ask('Use existing configuration file <info>midgard-portable.inc.php</info> ?', true)) {
             include $this->_basepath . '/config/midgard-portable.inc.php';
             return;
         }
-        $schema_dirs = array
-        (
+        $schema_dirs = array(
             $this->_basepath . '/var/schemas/',
         );
 
-        if (file_exists($this->_basepath . '/config/'))
-        {
+        if (file_exists($this->_basepath . '/config/')) {
             $schema_dirs[] = $this->_basepath . '/config/';
         }
-        if (file_exists($this->_basepath . '/vendor/openpsa/midcom/config/'))
-        {
+        if (file_exists($this->_basepath . '/vendor/openpsa/midcom/config/')) {
             $schema_dirs[] = $this->_basepath . '/vendor/openpsa/midcom/config/';
         }
 

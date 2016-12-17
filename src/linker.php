@@ -40,8 +40,7 @@ class linker
         $this->io = $io;
 
         if (   !extension_loaded('midgard')
-            && !extension_loaded('midgard2'))
-        {
+            && !extension_loaded('midgard2')) {
             $this->prepare_dir('var/schemas');
             $this->set_schema_location($this->basepath . '/var/schemas/');
         }
@@ -63,8 +62,7 @@ class linker
      */
     public function install($path)
     {
-        foreach ($this->get_links($path) as $linkdata)
-        {
+        foreach ($this->get_links($path) as $linkdata) {
             $this->link($linkdata['target'], $linkdata['linkname'], $linkdata['target_path']);
         }
     }
@@ -76,8 +74,7 @@ class linker
      */
     public function uninstall($path)
     {
-        foreach ($this->get_links($path) as $linkdata)
-        {
+        foreach ($this->get_links($path) as $linkdata) {
             $this->unlink($linkdata['linkname']);
         }
     }
@@ -90,11 +87,9 @@ class linker
      */
     public function update($path, array $oldlinks)
     {
-        foreach ($oldlinks as $linkdata)
-        {
+        foreach ($oldlinks as $linkdata) {
             $target_path = $linkdata['target_path'] ?: realpath($linkdata['target']);
-            if (!file_exists($target_path))
-            {
+            if (!file_exists($target_path)) {
                 $this->unlink($linkdata['linkname']);
             }
         }
@@ -108,8 +103,7 @@ class linker
 
     public function unlink($linkname)
     {
-        if (is_link($linkname))
-        {
+        if (is_link($linkname)) {
             $this->io->write('Removing link <info>' . $linkname . '</info>');
             @unlink($linkname);
         }
@@ -124,53 +118,40 @@ class linker
      */
     public function link($target, $linkname, $target_path = null)
     {
-        if (null === $target_path)
-        {
+        if (null === $target_path) {
             $target_path = $target;
         }
         $target_path = realpath($target_path);
 
-        if (!file_exists($target_path))
-        {
+        if (!file_exists($target_path)) {
             throw new \Exception('Cannot link to nonexistent path ' . $target);
         }
 
-        if (is_link($linkname))
-        {
-            if (!file_exists(realpath($linkname)))
-            {
+        if (is_link($linkname)) {
+            if (!file_exists(realpath($linkname))) {
                 $this->io->write('Link in <info>' . basename($target) . '</info> points to nonexistent path, removing');
                 @unlink($linkname);
-            }
-            else
-            {
+            } else {
                 if (   realpath($linkname) !== $target_path
-                    && md5_file(realpath($linkname)) !== md5_file($target_path))
-                {
+                    && md5_file(realpath($linkname)) !== md5_file($target_path)) {
                     $this->io->write('Skipping <info>' . basename($target) . '</info>: Found Link in <info>' . dirname($linkname) . '</info> to <comment>' . realpath($linkname) . '</comment>');
                 }
                 return;
             }
-        }
-        else if (is_file($linkname))
-        {
-            if (md5_file($linkname) !== md5_file($target_path))
-            {
+        } elseif (is_file($linkname)) {
+            if (md5_file($linkname) !== md5_file($target_path)) {
                 $this->io->write('Skipping <info>' . basename($target) . '</info>: Found existing file in <comment>' . dirname($linkname) . '</comment>');
             }
             return;
         }
 
-        if (!is_writeable(dirname($linkname)))
-        {
-            if ($this->readonly_behavior === null)
-            {
+        if (!is_writeable(dirname($linkname))) {
+            if ($this->readonly_behavior === null) {
                 $this->io->write('Directory <info>' . dirname($linkname) . '</info> is not writeable.');
                 $reply = $this->io->ask('<question>Please choose:</question> [<comment>(S)udo</comment>, (I)gnore, (A)bort]', 'S');
                 $this->readonly_behavior = strtolower(trim($reply));
             }
-            switch ($this->readonly_behavior)
-            {
+            switch ($this->readonly_behavior) {
                 case 'a':
                     throw new \Exception('Aborted by user command');
                 case 'i':
@@ -179,25 +160,20 @@ class linker
                 case '':
                 case 's':
                     exec('sudo ln -s ' . escapeshellarg($target) . ' ' . escapeshellarg($linkname), $output, $return);
-                    if ($return !== 0)
-                    {
+                    if ($return !== 0) {
                         throw new \Exception('Failed to link ' . basename($linkname) . ' to ' . dirname($linkname));
                     }
                     break;
                 default:
                     throw new \Exception('Invalid input');
             }
-        }
-        else
-        {
-            if (!@symlink($target, $linkname))
-            {
+        } else {
+            if (!@symlink($target, $linkname)) {
                 $error = error_get_last();
                 throw new \Exception('could not link ' . $target . ' to ' . $linkname . ': ' . $error['message']);
             }
         }
-        if ($this->io->isVerbose())
-        {
+        if ($this->io->isVerbose()) {
             $this->io->write('Linked <info>' . $target . '</info> to <comment>' . $linkname . '</comment>');
         }
     }
@@ -205,22 +181,18 @@ class linker
     private function get_static_links($repo_dir)
     {
         $source = $repo_dir . $this->static_dir;
-        if (!is_dir($source))
-        {
+        if (!is_dir($source)) {
             return;
         }
         $this->prepare_dir('web/midcom-static');
         $static_basedir = $this->basepath . '/web/midcom-static';
 
         $iterator = new \DirectoryIterator($source);
-        foreach ($iterator as $child)
-        {
+        foreach ($iterator as $child) {
             if (   $child->getType() == 'dir'
-                && substr($child->getFileName(), 0, 1) !== '.')
-            {
+                && substr($child->getFileName(), 0, 1) !== '.') {
                 $absolute_path = $child->getPathname();
-                $this->links[] = array
-                (
+                $this->links[] = array(
                     'target' => $this->get_relative_path($absolute_path),
                     'linkname' => $static_basedir . '/' . $child->getFilename(),
                     'target_path' => $absolute_path
@@ -232,8 +204,7 @@ class linker
     private function get_theme_links($repo_dir)
     {
         $source = $repo_dir . $this->themes_dir;
-        if (!is_dir($source))
-        {
+        if (!is_dir($source)) {
             return;
         }
         $this->prepare_dir('web/midcom-static');
@@ -242,11 +213,9 @@ class linker
         $themes_dir = $this->basepath . '/var/themes';
 
         $iterator = new \DirectoryIterator($source);
-        foreach ($iterator as $child)
-        {
+        foreach ($iterator as $child) {
             if (   $child->getType() == 'dir'
-                && substr($child->getFileName(), 0, 1) !== '.')
-            {
+                && substr($child->getFileName(), 0, 1) !== '.') {
                 // link theme
                 $absolute_path = $child->getPathname();
                 $this->links[] = array(
@@ -256,11 +225,9 @@ class linker
                 );
 
                 // link themes "static" folder
-                if (is_dir($child->getPathname() . '/static'))
-                {
+                if (is_dir($child->getPathname() . '/static')) {
                     $absolute_path = $child->getPathname() . '/static';
-                    $this->links[] = array
-                    (
+                    $this->links[] = array(
                         'target' => $this->get_relative_path($absolute_path),
                         'linkname' => $static_basedir . '/' . $child->getFilename(),
                         'target_path' => $absolute_path
@@ -272,38 +239,30 @@ class linker
 
     private function get_schema_links($repo_dir)
     {
-        if (extension_loaded('midgard'))
-        {
+        if (extension_loaded('midgard')) {
             $this->io->write('<warning>Linking schemas is not supported on Midgard1 right now, please do this manually if necessary</warning>');
             return;
         }
 
         $source = $repo_dir . $this->schemas_dir;
-        if (!is_dir($source))
-        {
+        if (!is_dir($source)) {
             return;
         }
 
         $iterator = new \DirectoryIterator($source);
-        foreach ($iterator as $child)
-        {
+        foreach ($iterator as $child) {
             if (   $child->getType() == 'file'
                 && substr($child->getFileName(), 0, 1) !== '.'
-                && substr($child->getFilename(), -4) === '.xml')
-            {
+                && substr($child->getFilename(), -4) === '.xml') {
                 $absolute_path = $child->getRealPath();
-                if (!extension_loaded('midgard2'))
-                {
+                if (!extension_loaded('midgard2')) {
                     //in midgard-portable, we link to our own var dir, so we can use relative links
                     $target = $this->get_relative_path($absolute_path);
-                }
-                else
-                {
+                } else {
                     $target = $absolute_path;
                     $absolute_path = null;
                 }
-                $this->links[] = array
-                (
+                $this->links[] = array(
                     'target' => $target,
                     'linkname' => $this->schema_location . $child->getFilename(),
                     'target_path' => $absolute_path

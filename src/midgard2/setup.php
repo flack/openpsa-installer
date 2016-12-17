@@ -62,8 +62,7 @@ class setup extends Command
         $app = new Application;
         $app->add(new self);
 
-        $args = array
-        (
+        $args = array(
             'command' => 'midgard2:setup',
             '--dbtype' => $dbtype
         );
@@ -88,15 +87,13 @@ class setup extends Command
 
     private function get_setup_strategy()
     {
-        if (extension_loaded('midgard'))
-        {
+        if (extension_loaded('midgard')) {
             throw new \Exception('Midgard1 is not supported. Please use datagard instead.');
         }
 
         $helperset = $this->getHelperSet();
 
-        if (extension_loaded('midgard2'))
-        {
+        if (extension_loaded('midgard2')) {
             return new \openpsa\installer\setup\midgard2($this->_input, $this->_output, $this->_basepath, $this->_sharedir, $helperset);
         }
         $this->_output->writeln("<info>Running setup for midgard-portable</info>");
@@ -105,8 +102,7 @@ class setup extends Command
 
     protected function _initialize(InputInterface $input, OutputInterface $output)
     {
-        if (empty($this->_basepath))
-        {
+        if (empty($this->_basepath)) {
             $this->_basepath = realpath('./');
         }
         $this->_sharedir = '/usr/share/midgard2';

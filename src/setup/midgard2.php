@@ -21,8 +21,7 @@ class midgard2 extends \openpsa\installer\setup\base
         $midgard = \midgard_connection::get_instance();
 
         $midgard->open_config($this->_config);
-        if (!$midgard->is_connected())
-        {
+        if (!$midgard->is_connected()) {
             throw new \Exception("Failed to open config {$this->_config->database}:" . $midgard->get_error_string());
         }
     }

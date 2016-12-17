@@ -72,10 +72,8 @@ class installerTest extends PHPUnit_Framework_TestCase
         $this->composer->setConfig($this->config);
         $this->composer->setPackage($this->createPackageMock());
 
-        $this->config->merge(array
-        (
-            'config' => array
-            (
+        $this->config->merge(array(
+            'config' => array(
                 'vendor-dir' => $this->vendorDir,
             )
         ));

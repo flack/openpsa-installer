@@ -2,12 +2,10 @@
 <?php
 //Some fiddling to get autoloader...
 $path = dirname(dirname(dirname(__DIR__))) . '/autoload.php'; // installed as dependency
-if (!file_exists($path))
-{
+if (!file_exists($path)) {
     $path = dirname(__DIR__) . '/vendor/autoload.php'; // installed as root package
 }
-if (!file_exists($path))
-{
+if (!file_exists($path)) {
     throw new \Exception('Composer autoloader could not be found');
 }
 require_once $path;
@@ -15,7 +13,7 @@ require_once $path;
 use Symfony\Component\Console\Application;
 use openpsa\installer\midgard2;
 
-$console = new Application('OpenPSA Installer', '1.0.0-dev');
+$console = new Application('OpenPSA Installer', '1.1.0-dev');
 $console->add(new midgard2\setup);
 $console->add(new midgard2\convert);
 $console->run();

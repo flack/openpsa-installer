@@ -42,11 +42,10 @@ class linkerTest extends PHPUnit_Framework_TestCase
         $this->fs = new Filesystem;
         $this->fs->ensureDirectoryExists($this->basedir);
 
-        $this->paths = array
-        (
+        $this->paths = array(
             'component_static' => $this->makepath(array('static', 'component.name')),
             'theme_static' => $this->makepath(array('themes', 'theme-name', 'static')),
-            'vendor_static' => $this->makepath(array('vendor', 'openpsa' , 'test' , 'static', 'vendor.component'))
+            'vendor_static' => $this->makepath(array('vendor', 'openpsa', 'test', 'static', 'vendor.component'))
         );
 
         $this->fs->ensureDirectoryExists($this->paths['component_static']);
@@ -97,7 +96,7 @@ class linkerTest extends PHPUnit_Framework_TestCase
     public function testInstall_vendor_static()
     {
         $linker = $this->_get_linker();
-        $linker->install($this->makepath(array('vendor', 'openpsa' , 'test')));
+        $linker->install($this->makepath(array('vendor', 'openpsa', 'test')));
 
         $vendor_static_link = $this->makepath(array('web', 'midcom-static', 'vendor.component'));
         $this->assertFileExists($vendor_static_link);

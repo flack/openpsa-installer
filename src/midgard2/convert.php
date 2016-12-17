@@ -35,8 +35,7 @@ class convert extends setup
      */
     private $pdo;
 
-    public $multilang_tables = array
-    (
+    public $multilang_tables = array(
         'topic' => array('title', 'extra', 'description'),
         'article' => array('title', 'abstract', 'content', 'url'),
         'element' => array('value'),
@@ -62,12 +61,9 @@ class convert extends setup
         $this->_initialize($input, $output);
         $this->_config = $this->_setup->prepare_config();
 
-        if (!$this->_input->getOption('skip-storage'))
-        {
+        if (!$this->_input->getOption('skip-storage')) {
             $this->_setup->prepare_storage();
-        }
-        else
-        {
+        } else {
             $this->_setup->prepare_connection();
         }
 
@@ -82,16 +78,13 @@ class convert extends setup
     {
         $this->_output->writeln("\n<info>Copying data from multilang tables</info>");
 
-        foreach ($this->multilang_tables as $table => $fields)
-        {
+        foreach ($this->multilang_tables as $table => $fields) {
             if (   !$this->_verify_table($table)
-                || !$this->_verify_table($table . '_i'))
-            {
+                || !$this->_verify_table($table . '_i')) {
                 continue;
             }
 
-            foreach ($fields as $field)
-            {
+            foreach ($fields as $field) {
                 $stmt = 'UPDATE ' . $table . ', ' . $table . '_i SET ';
                 $stmt .= $table . '.' . $field . ' = ' . $table . '_i.' . $field;
                 $stmt .= ' WHERE ' . $table . '_i.lang = 0 AND ' . $table . '_i.sid = ' . $table . '.id AND ' . $table . '.' . $field . ' = ""';
@@ -105,8 +98,7 @@ class convert extends setup
     private function _verify_table($table)
     {
         $result = $this->pdo->query('SHOW TABLES LIKE "' . $table . '"');
-        if ($result->rowCount() == 0)
-        {
+        if ($result->rowCount() == 0) {
             $this->_output->writeln(' - Table <info>' . $this->_config->database . '.' . $table . '</info> could not be found, skipping');
             return false;
         }
@@ -121,8 +113,7 @@ class convert extends setup
         $this->_output->write("\n<info>Updating AT entries</info>");
         $qb = \midcom_services_at_entry_db::new_query_builder();
         $results = $qb->execute();
-        foreach ($results as $result)
-        {
+        foreach ($results as $result) {
             $result->host = 0;
             $result->update();
         }
@@ -136,18 +127,15 @@ class convert extends setup
     private function _migrate_accounts()
     {
         $this->_output->writeln("\n<info>Migrating user accounts</info>");
-        if (empty($GLOBALS['midcom_config_local']))
-        {
+        if (empty($GLOBALS['midcom_config_local'])) {
             $GLOBALS['midcom_config_local'] = array();
         }
         $GLOBALS['midcom_config_local']['person_class'] = 'openpsa_person';
         $GLOBALS['midcom_config_local']['auth_type'] = $this->_input->getOption('authtype');
-        if (!defined('OPENPSA2_PREFIX'))
-        {
+        if (!defined('OPENPSA2_PREFIX')) {
             define('OPENPSA2_PREFIX', '/');
         }
-        $defaults = array
-        (
+        $defaults = array(
             'SERVER_PORT' => '80',
             'SERVER_NAME' => 'localhost',
             'HTTP_HOST' => 'localhost',
@@ -161,10 +149,8 @@ class convert extends setup
         $qb->add_constraint('username', '<>', '');
         $results = $qb->execute();
 
-        foreach ($results as $person)
-        {
-            if (!$this->_migrate_account($person))
-            {
+        foreach ($results as $person) {
+            if (!$this->_migrate_account($person)) {
                 $this->_output->writeln('   <error>Account for <info>' . $person->firstname . ' ' . $person->lastname . "</info> couldn't be migrated!</error>");
             }
         }
@@ -179,14 +165,10 @@ class convert extends setup
 
         $this->_output->writeln("Processing user <info>" . $person->username . "</info>");
 
-        if (substr($person->password, 0, 2) == '**')
-        {
+        if (substr($person->password, 0, 2) == '**') {
             $db_password = \midcom_connection::prepare_password(substr($db_password, 2));
-        }
-        else
-        {
-            if ($user->authtype !== 'Legacy')
-            {
+        } else {
+            if ($user->authtype !== 'Legacy') {
                 $this->_output->writeln("   Legacy password detected, resetting to <comment>'password'</comment>, please change ASAP");
                 $db_password = \midcom_connection::prepare_password('password');
             }
@@ -195,30 +177,23 @@ class convert extends setup
         $user->password = $db_password;
         $user->login = $person->username;
 
-        if (\midcom::get('config')->get('person_class') != 'midgard_person')
-        {
+        if (\midcom::get('config')->get('person_class') != 'midgard_person') {
             $mgd_person = new \midgard_person($person->guid);
-        }
-        else
-        {
+        } else {
             $mgd_person = $person;
         }
 
         $user->set_person($mgd_person);
         $user->active = true;
 
-        if ($this->_is_admin($person))
-        {
+        if ($this->_is_admin($person)) {
             $user->usertype = 2;
             $this->_output->writeln('   <comment>Setting admin flag</comment>');
         }
 
-        try
-        {
+        try {
             $user->create();
-        }
-        catch (\midgard_error_exception $e)
-        {
+        } catch (\midgard_error_exception $e) {
             return false;
         }
         return true;
@@ -227,13 +202,11 @@ class convert extends setup
     private function _is_admin($person)
     {
         static $admingroups = null;
-        if ($admingroups == null)
-        {
+        if ($admingroups == null) {
             $admingroups = array(0);
             $stmt = $this->pdo->prepare('SELECT admingroup FROM sitegroup');
             $stmt->execute();
-            while ($col = $stmt->fetchColumn())
-            {
+            while ($col = $stmt->fetchColumn()) {
                 $admingroups[] = (int) $col;
             }
         }
