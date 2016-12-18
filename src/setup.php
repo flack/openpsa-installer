@@ -42,23 +42,15 @@ class setup
      */
     protected $_basepath;
 
-    /**
-     * The share dir
-     *
-     * @var string
-     */
-    protected $_sharedir;
-
     protected $_helperset;
 
     protected $_config = null;
 
-    public function __construct(InputInterface $input, OutputInterface $output, $basepath, $sharedir, $helperset)
+    public function __construct(InputInterface $input, OutputInterface $output, $basepath, $helperset)
     {
         $this->_input = $input;
         $this->_output = $output;
         $this->_basepath = $basepath;
-        $this->_sharedir = $sharedir;
         $this->_helperset = $helperset;
     }
 
@@ -69,16 +61,12 @@ class setup
             && (   !file_exists($config_file)
                 || !is_file($config_file))) {
             //The working theory here is that input was a filename, rather than a path
-            if (file_exists($this->_sharedir . '/' . $config_file)) {
-                $config_file = $this->_sharedir . '/' . $config_file;
-            } else {
-                $prefix = getenv('HOME') . '/.midgard2/conf.d/';
-                if (!file_exists($prefix . $config_file)) {
-                    $this->_output->writeln("Configuration file <info>" . $config_file . "</info> not found.");
-                    return false;
-                }
-                $config_file = $prefix . $config_file;
+            $prefix = getenv('HOME') . '/.midgard2/conf.d/';
+            if (!file_exists($prefix . $config_file)) {
+                $this->_output->writeln("Configuration file <info>" . $config_file . "</info> not found.");
+                return false;
             }
+            $config_file = $prefix . $config_file;
         } else {
             $config_file = $this->_basepath . "/config/midgard2.ini";
         }
@@ -144,7 +132,7 @@ class setup
         }
 
         $config->blobdir = $this->_basepath . '/var/blobs';
-        $config->sharedir = $this->_sharedir;
+        $config->sharedir = $this->_basepath . '/var/schemas';
         $config->vardir = $this->_basepath . '/var';
         $config->cachedir = $this->_basepath . '/var/cache';
         $config->logfilename = $this->_basepath . '/var/log/midgard.log';

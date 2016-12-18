@@ -21,8 +21,6 @@ use Composer\Util\Filesystem;
  */
 class installer extends base_installer
 {
-    protected static $_sharedir = '/usr/share/midgard2';
-
     /**
      * {@inheritDoc}
      */

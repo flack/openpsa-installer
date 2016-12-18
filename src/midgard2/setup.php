@@ -87,7 +87,7 @@ class setup extends Command
     private function get_setup_strategy()
     {
         $helperset = $this->getHelperSet();
-        return new \openpsa\installer\setup($this->_input, $this->_output, $this->_basepath, $this->_sharedir, $helperset);
+        return new \openpsa\installer\setup($this->_input, $this->_output, $this->_basepath, $helperset);
     }
 
     protected function _initialize(InputInterface $input, OutputInterface $output)
@@ -95,7 +95,6 @@ class setup extends Command
         if (empty($this->_basepath)) {
             $this->_basepath = realpath('./');
         }
-        $this->_sharedir = '/usr/share/midgard2';
 
         $this->_output = $output;
         $this->_input = $input;
