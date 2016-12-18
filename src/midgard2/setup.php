@@ -8,7 +8,6 @@
 
 namespace openpsa\installer\midgard2;
 
-use openpsa\installer\installer;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -87,17 +86,8 @@ class setup extends Command
 
     private function get_setup_strategy()
     {
-        if (extension_loaded('midgard')) {
-            throw new \Exception('Midgard1 is not supported. Please use datagard instead.');
-        }
-
         $helperset = $this->getHelperSet();
-
-        if (extension_loaded('midgard2')) {
-            return new \openpsa\installer\setup\midgard2($this->_input, $this->_output, $this->_basepath, $this->_sharedir, $helperset);
-        }
-        $this->_output->writeln("<info>Running setup for midgard-portable</info>");
-        return new \openpsa\installer\setup\midgard\portable($this->_input, $this->_output, $this->_basepath, $this->_sharedir, $helperset);
+        return new \openpsa\installer\setup($this->_input, $this->_output, $this->_basepath, $this->_sharedir, $helperset);
     }
 
     protected function _initialize(InputInterface $input, OutputInterface $output)

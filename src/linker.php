@@ -39,11 +39,8 @@ class linker
         $this->basepath = $basepath;
         $this->io = $io;
 
-        if (   !extension_loaded('midgard')
-            && !extension_loaded('midgard2')) {
-            $this->prepare_dir('var/schemas');
-            $this->set_schema_location($this->basepath . '/var/schemas/');
-        }
+        $this->prepare_dir('var/schemas');
+        $this->set_schema_location($this->basepath . '/var/schemas/');
     }
 
     public function get_links($repo_dir)
@@ -239,11 +236,6 @@ class linker
 
     private function get_schema_links($repo_dir)
     {
-        if (extension_loaded('midgard')) {
-            $this->io->write('<warning>Linking schemas is not supported on Midgard1 right now, please do this manually if necessary</warning>');
-            return;
-        }
-
         $source = $repo_dir . $this->schemas_dir;
         if (!is_dir($source)) {
             return;
@@ -255,15 +247,8 @@ class linker
                 && substr($child->getFileName(), 0, 1) !== '.'
                 && substr($child->getFilename(), -4) === '.xml') {
                 $absolute_path = $child->getRealPath();
-                if (!extension_loaded('midgard2')) {
-                    //in midgard-portable, we link to our own var dir, so we can use relative links
-                    $target = $this->get_relative_path($absolute_path);
-                } else {
-                    $target = $absolute_path;
-                    $absolute_path = null;
-                }
                 $this->links[] = array(
-                    'target' => $target,
+                    'target' => $this->get_relative_path($absolute_path),
                     'linkname' => $this->schema_location . $child->getFilename(),
                     'target_path' => $absolute_path
                 );

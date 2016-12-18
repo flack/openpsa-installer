@@ -6,23 +6,22 @@
  * @license http://www.gnu.org/licenses/lgpl.html GNU Lesser General Public License
  */
 
-namespace openpsa\installer\setup;
+namespace openpsa\installer;
 
-use openpsa\installer\linker;
-use Composer\IO\ConsoleIO;
+use midgard\portable\driver;
+use midgard\portable\storage\connection;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Helper\ProgressBar;
-use Symfony\Component\Console\Question\Question;
-use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Console\Question\Question;
 
 /**
- * Base class for setup implementations
+ * Setup for midgard-portable
  *
  * @package openpsa.installer
  */
-abstract class base
+class setup
 {
     /**
      *
@@ -170,7 +169,29 @@ abstract class base
         return $config;
     }
 
-    abstract public function prepare_connection();
+    public function prepare_connection()
+    {
+        if (   file_exists($this->_basepath . '/config/midgard-portable.inc.php')
+            && $this->_ask('Use existing configuration file <info>midgard-portable.inc.php</info> ?', true)) {
+            include $this->_basepath . '/config/midgard-portable.inc.php';
+            return;
+        }
+        $schema_dirs = array(
+            $this->_basepath . '/var/schemas/',
+        );
+
+        $driver = new driver($schema_dirs, $this->_basepath . '/var', '');
+
+        $db_config = array(
+            'dbname' => $this->_config->database,
+            'user' => $this->_config->dbuser,
+            'password' => $this->_config->dbpass,
+            'host' => 'localhost',
+            'driver' => ( ($this->_config->dbtype == 'MySQL') ? "pdo_mysql" : "pdo_sqlite" )
+        );
+
+        connection::initialize($driver, $db_config);
+    }
 
     public function prepare_storage()
     {

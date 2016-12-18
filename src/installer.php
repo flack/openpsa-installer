@@ -79,12 +79,6 @@ class installer extends base_installer
 
         $linker = new linker($basedir, $event->getIO());
         $linker->install($basedir);
-
-        if (extension_loaded('midgard2')) {
-            $prefix = $basedir . '/vendor/openpsa/installer/data/';
-            $linker->link($prefix . 'midgard_auth_types.xml', self::$_sharedir . '/midgard_auth_types.xml');
-            $linker->link($prefix . 'MidgardObjects.xml', self::$_sharedir . '/MidgardObjects.xml');
-        }
     }
 
     public static function setup_project_directory($basedir)
