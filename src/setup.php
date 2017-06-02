@@ -12,12 +12,13 @@ use midgard\portable\driver;
 use midgard\portable\storage\connection;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 use Composer\IO\ConsoleIO;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use midgard\portable\command\schema;
+use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Input\ArrayInput;
 
 /**
  * Setup for midgard-portable
@@ -194,45 +195,19 @@ class setup
         $this->prepare_connection(false);
 
         $midgard = \midgard_connection::get_instance();
-        $this->_output->writeln('Preparing <info>' . $this->_config->dbtype . '</info> storage <comment>(this may take a while)</comment>');
+        $this->_output->writeln('Preparing <info>' . $this->_config->dbtype . '</info> storage');
 
         if (!$this->_config->create_blobdir()) {
             throw new \Exception("Failed to create file attachment storage directory to {$this->_config->blobdir}:" . $midgard->get_error_string());
         }
 
-        $schema = new schema();
-        $schema->setHelperSet($this->_helperset);
+        $input = new ArrayInput(array('command' => 'schema'));
+        $schema = new schema;
         $schema->connected = true;
-        $schema->run($this->_input, $this->_output);
-
-        $helper = new \midgard\introspection\helper;
-        $types = $helper->get_all_schemanames();
-
-        // no idea why this has to be listed explicitly...
-        $types[] = 'MidgardRepligard';
-
-        $progress = new ProgressBar($this->_output);
-        $progress->start(count($types) + 2);
-
-        // create storage
-        if (!\midgard_storage::create_base_storage()) {
-            if ($midgard->get_error_string() != 'MGD_ERR_OK') {
-                throw new \Exception("Failed to create base database structures" . $midgard->get_error_string());
-            }
-        }
-        $progress->advance();
-
-        foreach ($types as $type) {
-            if (!\midgard_storage::class_storage_exists($type)) {
-                \midgard_storage::create_class_storage($type);
-            }
-            // for some reason, create misses some fields under midgard2, so we call update unconditionally
-            \midgard_storage::update_class_storage($type);
-            $progress->advance();
-        }
-        $progress->finish();
-
-        $this->_output->writeln("\nStorage created");
+        $console = new Application;
+        $console->setAutoExit(false);
+        $console->add($schema);
+        $console->run($input, $this->_output);
     }
 
     protected function _ask($question, $default)
