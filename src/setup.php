@@ -17,6 +17,7 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 use Composer\IO\ConsoleIO;
 use Symfony\Component\Console\Question\ChoiceQuestion;
+use midgard\portable\command\schema;
 
 /**
  * Setup for midgard-portable
@@ -159,8 +160,9 @@ class setup
         return $config;
     }
 
-    public function prepare_connection()
+    public function prepare_connection($autostart = true)
     {
+        connection::set_autostart($autostart);
         if (   file_exists($this->_basepath . '/config/midgard-portable.inc.php')
             && $this->_ask('Use existing configuration file <info>midgard-portable.inc.php</info> ?', true)) {
             include $this->_basepath . '/config/midgard-portable.inc.php';
@@ -189,7 +191,7 @@ class setup
             throw new \Exception("No config loaded");
         }
 
-        $this->prepare_connection();
+        $this->prepare_connection(false);
 
         $midgard = \midgard_connection::get_instance();
         $this->_output->writeln('Preparing <info>' . $this->_config->dbtype . '</info> storage <comment>(this may take a while)</comment>');
@@ -197,6 +199,11 @@ class setup
         if (!$this->_config->create_blobdir()) {
             throw new \Exception("Failed to create file attachment storage directory to {$this->_config->blobdir}:" . $midgard->get_error_string());
         }
+
+        $schema = new schema();
+        $schema->setHelperSet($this->_helperset);
+        $schema->connected = true;
+        $schema->run($this->_input, $this->_output);
 
         $helper = new \midgard\introspection\helper;
         $types = $helper->get_all_schemanames();

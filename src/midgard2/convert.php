@@ -9,11 +9,11 @@
 namespace openpsa\installer\midgard2;
 
 use PDO;
-use midgard\introspection\helper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use midgard\portable\storage\connection;
 
 /**
  * Converts a mgd1 DB to mgd2
@@ -66,8 +66,7 @@ class convert extends setup
             $this->_setup->prepare_connection();
         }
 
-        $helper = new helper;
-        $this->pdo = $helper->get_pdo();
+        $this->pdo = connection::get_em()->getConnection()->getWrappedConnection();
         $this->_convert_tables();
         $this->_migrate_accounts();
         $this->_update_at_entries();
