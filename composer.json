@@ -15,7 +15,7 @@
         "composer/composer": "^1.0",
         "symfony/console": ">=2.6.0",
         "composer-plugin-api": "^1.0",
-        "openpsa/midgard-portable": "dev-master"
+        "openpsa/midgard-portable": ">=1.0.2"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
