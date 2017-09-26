@@ -47,9 +47,9 @@ class linkerTest extends PHPUnit_Framework_TestCase
     {
         $this->basedir = realpath(__DIR__) . DIRECTORY_SEPARATOR . 'test-basedir-' . uniqid();
 
-        $this->input = $this->getMock('Symfony\Component\Console\Input\InputInterface');
-        $this->output = $this->getMock('Symfony\Component\Console\Output\OutputInterface');
-        $this->helperset = $this->getMock('Symfony\Component\Console\Helper\HelperSet');
+        $this->input = $this->mock('Symfony\Component\Console\Input\InputInterface');
+        $this->output = $this->mock('Symfony\Component\Console\Output\OutputInterface');
+        $this->helperset = $this->mock('Symfony\Component\Console\Helper\HelperSet');
 
         $this->fs = new Filesystem;
         $this->fs->mkdir($this->basedir);
@@ -67,6 +67,14 @@ class linkerTest extends PHPUnit_Framework_TestCase
         $this->fs->mkdir($this->makepath(array('schemas_location')));
         $this->fs->mkdir($this->makepath(array('schemas')));
         touch($this->makepath(array('schemas', 'component_name.xml')));
+    }
+
+    private function mock($classname)
+    {
+        if (method_exists($this, 'getMock')) {
+            return $this->getMock($classname);
+        }
+        return $this->createMock($classname);
     }
 
     private function makepath(array $parts)

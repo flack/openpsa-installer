@@ -81,11 +81,20 @@ class installerTest extends PHPUnit_Framework_TestCase
                 ->getMock();
         $this->composer->setDownloadManager($this->dm);
 
-        $this->repository = $this->getMock('Composer\Repository\InstalledRepositoryInterface');
-        $this->io = $this->getMock('Composer\IO\IOInterface');
+        $this->repository = $this->mock('Composer\Repository\InstalledRepositoryInterface');
+        $this->io = $this->mock('Composer\IO\IOInterface');
 
         $this->installer = new installer($this->io, $this->composer);
     }
+
+    private function mock($classname)
+    {
+        if (method_exists($this, 'getMock')) {
+            return $this->getMock($classname);
+        }
+        return $this->createMock($classname);
+    }
+
 
     protected function tearDown()
     {
