@@ -13,6 +13,7 @@ use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Script\Event;
 use Symfony\Component\Filesystem\Filesystem;
+use Composer\IO\ConsoleIO;
 
 /**
  * Simple installer class. Runs standard Composer functionality and attaches custom services where appropriate
@@ -34,7 +35,7 @@ class installer extends base_installer
      */
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
-        $linker = $this->get_linker();
+        $linker = self::get_linker(dirname($this->vendorDir), $this->io);
         $old_links = $linker->get_links($this->getPackageBasePath($initial));
 
         parent::update($repo, $initial, $target);
@@ -49,7 +50,8 @@ class installer extends base_installer
     {
         parent::install($repo, $package);
 
-        $this->get_linker()->install($this->getPackageBasePath($package));
+        $linker = self::get_linker(dirname($this->vendorDir), $this->io);
+        $linker->install($this->getPackageBasePath($package));
     }
 
     /**
@@ -57,7 +59,8 @@ class installer extends base_installer
      */
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        $this->get_linker()->uninstall($this->getPackageBasePath($package));
+        $linker = self::get_linker(dirname($this->vendorDir), $this->io);
+        $linker->uninstall($this->getPackageBasePath($package));
 
         parent::uninstall($repo, $package);
     }
@@ -72,11 +75,10 @@ class installer extends base_installer
     {
         $basedir = realpath('./');
         self::setup_project_directory($basedir);
-
-        $this->get_linker($basedir)->install($basedir);
+        self::get_linker($basedir, $event->getIO())->install($basedir);
     }
 
-    private function get_linker($dir = null)
+    private static function get_linker($dir, ConsoleIO $io)
     {
         if ($dir === null) {
             $dir = dirname($this->vendorDir);
@@ -88,7 +90,7 @@ class installer extends base_installer
         $output->setAccessible(true);
         $helperset = $class->getProperty("helperSet");
         $helperset->setAccessible(true);
-        return new linker($dir, $input->getValue($this->io), $output->getValue($this->io), $helperset->getValue($this->io));
+        return new linker($dir, $input->getValue($io), $output->getValue($io), $helperset->getValue($io));
     }
 
     public static function setup_project_directory($basedir)
