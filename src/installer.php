@@ -12,7 +12,6 @@ use Composer\Installer\LibraryInstaller as base_installer;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Script\Event;
-use Symfony\Component\Filesystem\Filesystem;
 use Composer\IO\ConsoleIO;
 
 /**
@@ -74,7 +73,7 @@ class installer extends base_installer
     public static function setup_root_package(Event $event)
     {
         $basedir = realpath('./');
-        self::setup_project_directory($basedir);
+        setup::prepare_project_directory($basedir);
         self::get_linker($basedir, $event->getIO())->install($basedir);
     }
 
@@ -91,16 +90,5 @@ class installer extends base_installer
         $helperset = $class->getProperty("helperSet");
         $helperset->setAccessible(true);
         return new linker($dir, $input->getValue($io), $output->getValue($io), $helperset->getValue($io));
-    }
-
-    public static function setup_project_directory($basedir)
-    {
-        $fs = new Filesystem;
-        $fs->mkdir($basedir . '/config');
-        $fs->mkdir($basedir . '/var/cache');
-        $fs->mkdir($basedir . '/var/rcs');
-        $fs->mkdir($basedir . '/var/blobs');
-        $fs->mkdir($basedir . '/var/log');
-        $fs->mkdir($basedir . '/var/themes');
     }
 }

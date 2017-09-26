@@ -19,6 +19,7 @@ use Symfony\Component\Console\Question\ChoiceQuestion;
 use midgard\portable\command\schema;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Setup for midgard-portable
@@ -228,5 +229,16 @@ class setup
         $question->setHidden(true);
         $question->setHiddenFallback(false);
         return $dialog->ask($this->_input, $this->_output, $question);
+    }
+
+    public static function prepare_project_directory($basedir)
+    {
+        $fs = new Filesystem;
+        $fs->mkdir($basedir . '/config');
+        $fs->mkdir($basedir . '/var/cache');
+        $fs->mkdir($basedir . '/var/rcs');
+        $fs->mkdir($basedir . '/var/blobs');
+        $fs->mkdir($basedir . '/var/log');
+        $fs->mkdir($basedir . '/var/themes');
     }
 }

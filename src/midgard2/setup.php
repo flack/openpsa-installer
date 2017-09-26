@@ -16,7 +16,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
-use openpsa\installer\installer;
+use openpsa\installer\setup as helper;
 
 /**
  * Sets up a mgd2 configuration and DB
@@ -58,7 +58,7 @@ class setup extends Command
 
     public static function install($basepath, $dbtype = 'MySQL')
     {
-        installer::setup_project_directory($basepath);
+        helper::prepare_project_directory($basepath);
         $app = new Application;
         $app->add(new self);
 
