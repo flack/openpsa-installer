@@ -70,11 +70,11 @@ class installerTest extends PHPUnit_Framework_TestCase
         $this->composer->setConfig($this->config);
         $this->composer->setPackage($this->createPackageMock());
 
-        $this->config->merge(array(
-            'config' => array(
+        $this->config->merge([
+            'config' => [
                 'vendor-dir' => $this->vendorDir,
-            )
-        ));
+            ]
+        ]);
 
         $this->dm = $this->getMockBuilder('Composer\Downloader\DownloadManager')
                 ->disableOriginalConstructor()
@@ -101,10 +101,10 @@ class installerTest extends PHPUnit_Framework_TestCase
         $this->fs->remove($this->vendorDir);
     }
 
-    protected function createPackageMock(array $extra = array())
+    protected function createPackageMock(array $extra = [])
     {
         $package = $this->getMockBuilder('Composer\Package\RootPackage')
-                ->setConstructorArgs(array(md5(rand()), '1.0.0.0', '1.0.0'))
+                ->setConstructorArgs([md5(rand()), '1.0.0.0', '1.0.0'])
                 ->getMock();
 
         return $package;

@@ -41,7 +41,7 @@ class linkerTest extends PHPUnit_Framework_TestCase
      */
     protected $helperset;
 
-    private $paths = array();
+    private $paths = [];
 
     protected function setUp()
     {
@@ -54,19 +54,19 @@ class linkerTest extends PHPUnit_Framework_TestCase
         $this->fs = new Filesystem;
         $this->fs->mkdir($this->basedir);
 
-        $this->paths = array(
-            'component_static' => $this->makepath(array('static', 'component.name')),
-            'theme_static' => $this->makepath(array('themes', 'theme-name', 'static')),
-            'vendor_static' => $this->makepath(array('vendor', 'openpsa', 'test', 'static', 'vendor.component'))
-        );
+        $this->paths = [
+            'component_static' => $this->makepath(['static', 'component.name']),
+            'theme_static' => $this->makepath(['themes', 'theme-name', 'static']),
+            'vendor_static' => $this->makepath(['vendor', 'openpsa', 'test', 'static', 'vendor.component'])
+        ];
 
         $this->fs->mkdir($this->paths['component_static']);
         $this->fs->mkdir($this->paths['theme_static']);
         $this->fs->mkdir($this->paths['vendor_static']);
 
-        $this->fs->mkdir($this->makepath(array('schemas_location')));
-        $this->fs->mkdir($this->makepath(array('schemas')));
-        touch($this->makepath(array('schemas', 'component_name.xml')));
+        $this->fs->mkdir($this->makepath(['schemas_location']));
+        $this->fs->mkdir($this->makepath(['schemas']));
+        touch($this->makepath(['schemas', 'component_name.xml']));
     }
 
     private function mock($classname)
@@ -91,7 +91,7 @@ class linkerTest extends PHPUnit_Framework_TestCase
     private function _get_linker()
     {
         $linker = new linker($this->basedir, $this->input, $this->output, $this->helperset);
-        $linker->set_schema_location($this->makepath(array('var', 'schemas')) . DIRECTORY_SEPARATOR);
+        $linker->set_schema_location($this->makepath(['var', 'schemas']) . DIRECTORY_SEPARATOR);
         return $linker;
     }
 
@@ -100,12 +100,12 @@ class linkerTest extends PHPUnit_Framework_TestCase
         $linker = $this->_get_linker();
         $linker->install($this->basedir);
 
-        $component_static_link = $this->makepath(array('web', 'midcom-static', 'component.name'));
+        $component_static_link = $this->makepath(['web', 'midcom-static', 'component.name']);
         $this->assertFileExists($component_static_link);
         $this->assertSame(realpath($component_static_link), $this->paths['component_static']);
-        $this->assertFileExists($this->makepath(array('web', 'midcom-static', 'theme-name')));
-        $this->assertFileExists($this->makepath(array('var', 'schemas', 'component_name.xml')));
-        $themes_link = $this->makepath(array('var', 'themes', 'theme-name'));
+        $this->assertFileExists($this->makepath(['web', 'midcom-static', 'theme-name']));
+        $this->assertFileExists($this->makepath(['var', 'schemas', 'component_name.xml']));
+        $themes_link = $this->makepath(['var', 'themes', 'theme-name']);
         $this->assertFileExists($themes_link);
         $this->assertSame(dirname($this->paths['theme_static']), realpath($themes_link));
 
@@ -116,22 +116,22 @@ class linkerTest extends PHPUnit_Framework_TestCase
     public function testInstall_vendor_static()
     {
         $linker = $this->_get_linker();
-        $linker->install($this->makepath(array('vendor', 'openpsa', 'test')));
+        $linker->install($this->makepath(['vendor', 'openpsa', 'test']));
 
-        $vendor_static_link = $this->makepath(array('web', 'midcom-static', 'vendor.component'));
+        $vendor_static_link = $this->makepath(['web', 'midcom-static', 'vendor.component']);
         $this->assertFileExists($vendor_static_link);
         $this->assertSame(realpath($vendor_static_link), $this->paths['vendor_static']);
     }
 
     public function testInstall_incomplete_theme_dir()
     {
-        $this->fs->remove($this->makepath(array('themes', 'theme-name', 'static')));
+        $this->fs->remove($this->makepath(['themes', 'theme-name', 'static']));
 
         $linker = $this->_get_linker();
         $linker->install($this->basedir);
 
-        $this->assertFileExists($this->makepath(array('web', 'midcom-static', 'component.name')));
-        $this->assertFileNotExists($this->makepath(array('web', 'midcom-static', 'theme-name')));
+        $this->assertFileExists($this->makepath(['web', 'midcom-static', 'component.name']));
+        $this->assertFileNotExists($this->makepath(['web', 'midcom-static', 'theme-name']));
     }
 
     /**
@@ -145,9 +145,9 @@ class linkerTest extends PHPUnit_Framework_TestCase
         $linker = $this->_get_linker();
         $linker->uninstall($this->basedir);
 
-        $this->assertFileNotExists($this->makepath(array('web', 'midcom-static', 'component.name')));
-        $this->assertFileNotExists($this->makepath(array('web', 'midcom-static', 'theme-name')));
-        $this->assertFileNotExists($this->makepath(array('var', 'themes', 'theme-name')));
-        $this->assertFileNotExists($this->makepath(array('schemas_location', 'component_name.xml')));
+        $this->assertFileNotExists($this->makepath(['web', 'midcom-static', 'component.name']));
+        $this->assertFileNotExists($this->makepath(['web', 'midcom-static', 'theme-name']));
+        $this->assertFileNotExists($this->makepath(['var', 'themes', 'theme-name']));
+        $this->assertFileNotExists($this->makepath(['schemas_location', 'component_name.xml']));
     }
 }

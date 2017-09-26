@@ -62,10 +62,10 @@ class setup extends Command
         $app = new Application;
         $app->add(new self);
 
-        $args = array(
+        $args = [
             'command' => 'midgard2:setup',
             '--dbtype' => $dbtype
-        );
+        ];
         $command = $app->find('midgard2:setup');
         $command->set_basepath($basepath);
 

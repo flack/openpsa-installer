@@ -116,7 +116,7 @@ class setup
         }
         if (empty($dbtype)) {
             $dialog = $this->_helperset->get('question');
-            $question = new ChoiceQuestion('<question>DB type:</question>', array('MySQL', 'SQLite'), 0);
+            $question = new ChoiceQuestion('<question>DB type:</question>', ['MySQL', 'SQLite'], 0);
             $dbtype = $dialog->ask($this->_input, $this->_output, $question);
         }
 
@@ -169,19 +169,19 @@ class setup
             include $this->_basepath . '/config/midgard-portable.inc.php';
             return;
         }
-        $schema_dirs = array(
+        $schema_dirs = [
             $this->_basepath . '/var/schemas/',
-        );
+        ];
 
         $driver = new driver($schema_dirs, $this->_basepath . '/var', '');
 
-        $db_config = array(
+        $db_config = [
             'dbname' => $this->_config->database,
             'user' => $this->_config->dbuser,
             'password' => $this->_config->dbpass,
             'host' => 'localhost',
             'driver' => ( ($this->_config->dbtype == 'MySQL') ? "pdo_mysql" : "pdo_sqlite" )
-        );
+        ];
 
         connection::initialize($driver, $db_config);
     }
@@ -201,7 +201,7 @@ class setup
             throw new \Exception("Failed to create file attachment storage directory to {$this->_config->blobdir}:" . $midgard->get_error_string());
         }
 
-        $input = new ArrayInput(array('command' => 'schema'));
+        $input = new ArrayInput(['command' => 'schema']);
         $schema = new schema;
         $schema->connected = true;
         $console = new Application;

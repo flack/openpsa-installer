@@ -29,7 +29,7 @@ class linker
 
     private $basepath;
 
-    private $links = array();
+    private $links = [];
 
     /**
      * @var InputInterface
@@ -66,7 +66,7 @@ class linker
 
     public function get_links($repo_dir)
     {
-        $this->links = array();
+        $this->links = [];
         $this->get_static_links($repo_dir);
         $this->get_theme_links($repo_dir);
         $this->get_schema_links($repo_dir);
@@ -211,11 +211,11 @@ class linker
             if (   $child->getType() == 'dir'
                 && substr($child->getFileName(), 0, 1) !== '.') {
                 $absolute_path = $child->getPathname();
-                $this->links[] = array(
+                $this->links[] = [
                     'target' => $this->get_relative_path($absolute_path),
                     'linkname' => $static_basedir . '/' . $child->getFilename(),
                     'target_path' => $absolute_path
-                );
+                ];
             }
         }
     }
@@ -237,20 +237,20 @@ class linker
                 && substr($child->getFileName(), 0, 1) !== '.') {
                 // link theme
                 $absolute_path = $child->getPathname();
-                $this->links[] = array(
+                $this->links[] = [
                     'target' => $this->get_relative_path($absolute_path),
                     'linkname' => $themes_dir . '/' . $child->getFilename(),
                     'target_path' => $absolute_path
-                );
+                ];
 
                 // link themes "static" folder
                 if (is_dir($child->getPathname() . '/static')) {
                     $absolute_path = $child->getPathname() . '/static';
-                    $this->links[] = array(
+                    $this->links[] = [
                         'target' => $this->get_relative_path($absolute_path),
                         'linkname' => $static_basedir . '/' . $child->getFilename(),
                         'target_path' => $absolute_path
-                    );
+                    ];
                 }
             }
         }
@@ -269,11 +269,11 @@ class linker
                 && substr($child->getFileName(), 0, 1) !== '.'
                 && substr($child->getFilename(), -4) === '.xml') {
                 $absolute_path = $child->getRealPath();
-                $this->links[] = array(
+                $this->links[] = [
                     'target' => $this->get_relative_path($absolute_path),
                     'linkname' => $this->schema_location . $child->getFilename(),
                     'target_path' => $absolute_path
-                );
+                ];
             }
         }
     }

@@ -34,17 +34,17 @@ class convert extends setup
      */
     private $pdo;
 
-    public $multilang_tables = array(
-        'topic' => array('title', 'extra', 'description'),
-        'article' => array('title', 'abstract', 'content', 'url'),
-        'element' => array('value'),
-        'net_nemein_redirector_tinyurl' => array('title', 'description'),
-        'org_openpsa_products_product_group' => array('title', 'description'),
-        'org_openpsa_products_product' => array('title', 'description'),
-        'pageelement' => array('value'),
-        'page' => array('title', 'content'),
-        'snippet' => array('code', 'doc'),
-    );
+    public $multilang_tables = [
+        'topic' => ['title', 'extra', 'description'],
+        'article' => ['title', 'abstract', 'content', 'url'],
+        'element' => ['value'],
+        'net_nemein_redirector_tinyurl' => ['title', 'description'],
+        'org_openpsa_products_product_group' => ['title', 'description'],
+        'org_openpsa_products_product' => ['title', 'description'],
+        'pageelement' => ['value'],
+        'page' => ['title', 'content'],
+        'snippet' => ['code', 'doc'],
+    ];
 
     protected function configure()
     {
@@ -126,19 +126,19 @@ class convert extends setup
     {
         $this->_output->writeln("\n<info>Migrating user accounts</info>");
         if (empty($GLOBALS['midcom_config_local'])) {
-            $GLOBALS['midcom_config_local'] = array();
+            $GLOBALS['midcom_config_local'] = [];
         }
         $GLOBALS['midcom_config_local']['person_class'] = 'openpsa_person';
         $GLOBALS['midcom_config_local']['auth_type'] = $this->_input->getOption('authtype');
         if (!defined('OPENPSA2_PREFIX')) {
             define('OPENPSA2_PREFIX', '/');
         }
-        $defaults = array(
+        $defaults = [
             'SERVER_PORT' => '80',
             'SERVER_NAME' => 'localhost',
             'HTTP_HOST' => 'localhost',
             'REQUEST_URI' => '/midgard2-convert'
-        );
+        ];
         $_SERVER = array_merge($defaults, $_SERVER);
 
         \midcom::init();
@@ -201,7 +201,7 @@ class convert extends setup
     {
         static $admingroups = null;
         if ($admingroups == null) {
-            $admingroups = array(0);
+            $admingroups = [0];
             $stmt = $this->pdo->prepare('SELECT admingroup FROM sitegroup');
             $stmt->execute();
             while ($col = $stmt->fetchColumn()) {
