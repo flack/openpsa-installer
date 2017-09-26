@@ -192,7 +192,7 @@ class linker
                 throw new \Exception('could not link ' . $target . ' to ' . $linkname . ': ' . $error['message']);
             }
         }
-        if ($this->output->isVerbose()) {
+        if ($this->output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
             $this->output->writeln('Linked <info>' . $target . '</info> to <comment>' . $linkname . '</comment>');
         }
     }
