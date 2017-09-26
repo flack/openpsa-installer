@@ -7,11 +7,9 @@
  */
 
 use openpsa\installer\installer;
-use Composer\Installer\LibraryInstaller;
-use Composer\Util\Filesystem;
-use Composer\Test\TestCase;
 use Composer\Composer;
 use Composer\Config;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Simple installer tests
@@ -65,7 +63,7 @@ class installerTest extends PHPUnit_Framework_TestCase
         $this->fs = new Filesystem;
 
         $this->vendorDir = realpath(__DIR__) . DIRECTORY_SEPARATOR . 'composer-test-vendor';
-        $this->fs->ensureDirectoryExists($this->vendorDir);
+        $this->fs->mkdir($this->vendorDir);
 
         $this->composer = new Composer();
         $this->config = new Config();
@@ -91,7 +89,7 @@ class installerTest extends PHPUnit_Framework_TestCase
 
     protected function tearDown()
     {
-        $this->fs->removeDirectory($this->vendorDir);
+        $this->fs->remove($this->vendorDir);
     }
 
     protected function createPackageMock(array $extra = array())

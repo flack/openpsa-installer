@@ -52,7 +52,7 @@ class setup extends Command
     /**
      * the setup class specific to midgard2 or midgard-portable
      *
-     * @var interfaces_setup
+     * @var \openpsa\installer\setup
      */
     protected $_setup;
 

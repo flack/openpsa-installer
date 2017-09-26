@@ -7,8 +7,7 @@
  */
 
 use openpsa\installer\linker;
-use Composer\Util\Filesystem;
-use Composer\IO\IOInterface;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Simple linker tests
@@ -23,24 +22,37 @@ class linkerTest extends PHPUnit_Framework_TestCase
     protected $basedir;
 
     /**
-     * @var Composer\Util\Filesystem
+     * @var Filesystem
      */
     protected $fs;
 
     /**
-     * @var Composer\IO\IOInterface
+     * @var Symfony\Component\Console\Input\InputInterface
      */
-    protected $io;
+    protected $input;
+
+    /**
+     * @var Symfony\Component\Console\Output\OutputInterface
+     */
+    protected $output;
+
+    /**
+     * @var Symfony\Component\Console\Helper\HelperSet
+     */
+    protected $helperset;
 
     private $paths = array();
 
     protected function setUp()
     {
         $this->basedir = realpath(__DIR__) . DIRECTORY_SEPARATOR . 'test-basedir-' . uniqid();
-        $this->io = $this->getMock('Composer\IO\IOInterface');
+
+        $this->input = $this->getMock('Symfony\Component\Console\Input\InputInterface');
+        $this->output = $this->getMock('Symfony\Component\Console\Output\OutputInterface');
+        $this->helperset = $this->getMock('Symfony\Component\Console\Helper\HelperSet');
 
         $this->fs = new Filesystem;
-        $this->fs->ensureDirectoryExists($this->basedir);
+        $this->fs->mkdir($this->basedir);
 
         $this->paths = array(
             'component_static' => $this->makepath(array('static', 'component.name')),
@@ -48,12 +60,12 @@ class linkerTest extends PHPUnit_Framework_TestCase
             'vendor_static' => $this->makepath(array('vendor', 'openpsa', 'test', 'static', 'vendor.component'))
         );
 
-        $this->fs->ensureDirectoryExists($this->paths['component_static']);
-        $this->fs->ensureDirectoryExists($this->paths['theme_static']);
-        $this->fs->ensureDirectoryExists($this->paths['vendor_static']);
+        $this->fs->mkdir($this->paths['component_static']);
+        $this->fs->mkdir($this->paths['theme_static']);
+        $this->fs->mkdir($this->paths['vendor_static']);
 
-        $this->fs->ensureDirectoryExists($this->makepath(array('schemas_location')));
-        $this->fs->ensureDirectoryExists($this->makepath(array('schemas')));
+        $this->fs->mkdir($this->makepath(array('schemas_location')));
+        $this->fs->mkdir($this->makepath(array('schemas')));
         touch($this->makepath(array('schemas', 'component_name.xml')));
     }
 
@@ -65,12 +77,12 @@ class linkerTest extends PHPUnit_Framework_TestCase
 
     protected function tearDown()
     {
-        $this->fs->removeDirectory($this->basedir);
+        $this->fs->remove($this->basedir);
     }
 
     private function _get_linker()
     {
-        $linker = new linker($this->basedir, $this->io);
+        $linker = new linker($this->basedir, $this->input, $this->output, $this->helperset);
         $linker->set_schema_location($this->makepath(array('var', 'schemas')) . DIRECTORY_SEPARATOR);
         return $linker;
     }
@@ -105,7 +117,7 @@ class linkerTest extends PHPUnit_Framework_TestCase
 
     public function testInstall_incomplete_theme_dir()
     {
-        $this->fs->removeDirectory($this->makepath(array('themes', 'theme-name', 'static')));
+        $this->fs->remove($this->makepath(array('themes', 'theme-name', 'static')));
 
         $linker = $this->_get_linker();
         $linker->install($this->basedir);

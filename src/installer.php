@@ -12,7 +12,7 @@ use Composer\Installer\LibraryInstaller as base_installer;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Script\Event;
-use Composer\Util\Filesystem;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Simple installer class. Runs standard Composer functionality and attaches custom services where appropriate
@@ -34,7 +34,7 @@ class installer extends base_installer
      */
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
-        $linker = new linker(dirname($this->vendorDir), $this->io);
+        $linker = $this->get_linker();
         $old_links = $linker->get_links($this->getPackageBasePath($initial));
 
         parent::update($repo, $initial, $target);
@@ -49,8 +49,7 @@ class installer extends base_installer
     {
         parent::install($repo, $package);
 
-        $linker = new linker(dirname($this->vendorDir), $this->io);
-        $linker->install($this->getPackageBasePath($package));
+        $this->get_linker()->install($this->getPackageBasePath($package));
     }
 
     /**
@@ -58,8 +57,7 @@ class installer extends base_installer
      */
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        $linker = new linker(dirname($this->vendorDir), $this->io);
-        $linker->uninstall($this->getPackageBasePath($package));
+        $this->get_linker()->uninstall($this->getPackageBasePath($package));
 
         parent::uninstall($repo, $package);
     }
@@ -75,18 +73,32 @@ class installer extends base_installer
         $basedir = realpath('./');
         self::setup_project_directory($basedir);
 
-        $linker = new linker($basedir, $event->getIO());
-        $linker->install($basedir);
+        $this->get_linker($basedir)->install($basedir);
+    }
+
+    private function get_linker($dir = null)
+    {
+        if ($dir === null) {
+            $dir = dirname($this->vendorDir);
+        }
+        $class = new \ReflectionClass('Composer\IO\ConsoleIO');
+        $input = $class->getProperty("input");
+        $input->setAccessible(true);
+        $output = $class->getProperty("output");
+        $output->setAccessible(true);
+        $helperset = $class->getProperty("helperSet");
+        $helperset->setAccessible(true);
+        return new linker($dir, $input->getValue($this->io), $output->getValue($this->io), $helperset->getValue($this->io));
     }
 
     public static function setup_project_directory($basedir)
     {
         $fs = new Filesystem;
-        $fs->ensureDirectoryExists($basedir . '/config');
-        $fs->ensureDirectoryExists($basedir . '/var/cache');
-        $fs->ensureDirectoryExists($basedir . '/var/rcs');
-        $fs->ensureDirectoryExists($basedir . '/var/blobs');
-        $fs->ensureDirectoryExists($basedir . '/var/log');
-        $fs->ensureDirectoryExists($basedir . '/var/themes');
+        $fs->mkdir($basedir . '/config');
+        $fs->mkdir($basedir . '/var/cache');
+        $fs->mkdir($basedir . '/var/rcs');
+        $fs->mkdir($basedir . '/var/blobs');
+        $fs->mkdir($basedir . '/var/log');
+        $fs->mkdir($basedir . '/var/themes');
     }
 }

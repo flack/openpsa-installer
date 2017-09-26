@@ -7,8 +7,11 @@
  */
 
 namespace openpsa\installer;
-use Composer\IO\IOInterface;
-use Composer\Util\Filesystem;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Helper\HelperSet;
+use Symfony\Component\Console\Question\Question;
 
 /**
  * Link management service
@@ -29,15 +32,33 @@ class linker
     private $links = array();
 
     /**
+     * @var InputInterface
+     */
+    private $input;
+
+    /**
+     * @var OutputInterface
+     */
+    private $output;
+
+    /**
+     * @var HelperSet
+     */
+    private $helperset;
+
+    /**
      * Default constructor
      *
      * @param string $basepath The root package path
-     * @param IOInterface $io Composer IO interface
+     * @param InputInterface $input
+     * @param OutputInterface $output
      */
-    public function __construct($basepath, IOInterface $io)
+    public function __construct($basepath, InputInterface $input, OutputInterface $output, HelperSet $helperset)
     {
         $this->basepath = $basepath;
-        $this->io = $io;
+        $this->input = $input;
+        $this->output = $output;
+        $this->helperset = $helperset;
 
         $this->prepare_dir('var/schemas');
         $this->set_schema_location($this->basepath . '/var/schemas/');
@@ -101,7 +122,7 @@ class linker
     public function unlink($linkname)
     {
         if (is_link($linkname)) {
-            $this->io->write('Removing link <info>' . $linkname . '</info>');
+            $this->output->writeln('Removing link <info>' . $linkname . '</info>');
             @unlink($linkname);
         }
     }
@@ -126,33 +147,34 @@ class linker
 
         if (is_link($linkname)) {
             if (!file_exists(realpath($linkname))) {
-                $this->io->write('Link in <info>' . basename($target) . '</info> points to nonexistent path, removing');
+                $this->output->writeln('Link in <info>' . basename($target) . '</info> points to nonexistent path, removing');
                 @unlink($linkname);
             } else {
                 if (   realpath($linkname) !== $target_path
                     && md5_file(realpath($linkname)) !== md5_file($target_path)) {
-                    $this->io->write('Skipping <info>' . basename($target) . '</info>: Found Link in <info>' . dirname($linkname) . '</info> to <comment>' . realpath($linkname) . '</comment>');
+                    $this->output->writeln('Skipping <info>' . basename($target) . '</info>: Found Link in <info>' . dirname($linkname) . '</info> to <comment>' . realpath($linkname) . '</comment>');
                 }
                 return;
             }
         } elseif (is_file($linkname)) {
             if (md5_file($linkname) !== md5_file($target_path)) {
-                $this->io->write('Skipping <info>' . basename($target) . '</info>: Found existing file in <comment>' . dirname($linkname) . '</comment>');
+                $this->output->writeln('Skipping <info>' . basename($target) . '</info>: Found existing file in <comment>' . dirname($linkname) . '</comment>');
             }
             return;
         }
 
         if (!is_writeable(dirname($linkname))) {
             if ($this->readonly_behavior === null) {
-                $this->io->write('Directory <info>' . dirname($linkname) . '</info> is not writeable.');
-                $reply = $this->io->ask('<question>Please choose:</question> [<comment>(S)udo</comment>, (I)gnore, (A)bort]', 'S');
+                $this->output->writeln('Directory <info>' . dirname($linkname) . '</info> is not writeable.');
+                $dialog = $this->helperset->get('question');
+                $reply = $dialog->ask($this->input, $this->output, new Question('<question>Please choose:</question> [<comment>(S)udo</comment>, (I)gnore, (A)bort] '));
                 $this->readonly_behavior = strtolower(trim($reply));
             }
             switch ($this->readonly_behavior) {
                 case 'a':
                     throw new \Exception('Aborted by user command');
                 case 'i':
-                    $this->io->write('<info>Skipped linking ' . basename($linkname) . ' to ' . dirname($linkname) . '</info>');
+                    $this->output->writeln('<info>Skipped linking ' . basename($linkname) . ' to ' . dirname($linkname) . '</info>');
                     return;
                 case '':
                 case 's':
@@ -170,8 +192,8 @@ class linker
                 throw new \Exception('could not link ' . $target . ' to ' . $linkname . ': ' . $error['message']);
             }
         }
-        if ($this->io->isVerbose()) {
-            $this->io->write('Linked <info>' . $target . '</info> to <comment>' . $linkname . '</comment>');
+        if ($this->output->isVerbose()) {
+            $this->output->writeln('Linked <info>' . $target . '</info> to <comment>' . $linkname . '</comment>');
         }
     }
 
@@ -259,7 +281,7 @@ class linker
     private function prepare_dir($dir)
     {
         $fs = new Filesystem;
-        $fs->ensureDirectoryExists($this->basepath . '/' . $dir);
+        $fs->mkdir($this->basepath . '/' . $dir);
     }
 
     private function get_relative_path($absolute_path, $updir_count = 2)

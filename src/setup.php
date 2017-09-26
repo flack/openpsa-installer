@@ -149,7 +149,7 @@ class setup
         }
 
         try {
-            $linker = new linker($this->_basepath, new ConsoleIO($this->_input, $this->_output, $this->_helperset));
+            $linker = new linker($this->_basepath, $this->_input, $this->_output, $this->_helperset);
             $linker->link($target_path, $this->_basepath . '/config/midgard2.ini');
             $this->_output->writeln("Configuration file <info>" . $target_path . "</info> created.");
         } catch (\Exception $e) {
