@@ -197,6 +197,23 @@ class linker
         }
     }
 
+    public function remove_dangling_links()
+    {
+        $to_check = [
+            $this->basepath . '/web/midcom-static',
+            $this->basepath . '/var/themes',
+            $this->schema_location
+        ];
+        foreach ($to_check as $path) {
+            $iterator = new \DirectoryIterator($path);
+            foreach ($iterator as $child) {
+                if ($child->isLink() && !$child->getRealPath()) {
+                    $this->unlink($child->getPathname());
+                }
+            }
+        }
+    }
+
     private function get_static_links($repo_dir)
     {
         $source = $repo_dir . $this->static_dir;

@@ -74,7 +74,11 @@ class installer extends base_installer
     {
         $basedir = realpath('./');
         setup::prepare_project_directory($basedir);
-        self::get_linker($basedir, $event->getIO())->install($basedir);
+        $linker = self::get_linker($basedir, $event->getIO());
+        if ($event->getName() === 'post-update-cmd') {
+            $linker->remove_dangling_links();
+        }
+        $linker->install($basedir);
     }
 
     private static function get_linker($dir, ConsoleIO $io)
