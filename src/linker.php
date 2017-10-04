@@ -199,11 +199,11 @@ class linker
 
     public function remove_dangling_links()
     {
-        $to_check = [
+        $to_check = array_filter([
             $this->basepath . '/web/midcom-static',
             $this->basepath . '/var/themes',
             $this->schema_location
-        ];
+        ], 'is_dir');
         foreach ($to_check as $path) {
             $iterator = new \DirectoryIterator($path);
             foreach ($iterator as $child) {
