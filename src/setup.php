@@ -8,6 +8,8 @@
 
 namespace openpsa\installer;
 
+use midgard\portable\api\config;
+use midgard\portable\command\schema;
 use midgard\portable\driver;
 use midgard\portable\storage\connection;
 use Symfony\Component\Console\Input\InputInterface;
@@ -15,7 +17,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Question\ChoiceQuestion;
-use midgard\portable\command\schema;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Filesystem\Filesystem;
@@ -93,7 +94,7 @@ class setup
 
         $this->_output->writeln('Using config file found at <info>' . $config_file . '</info>');
 
-        $config = new \midgard_config;
+        $config = new config;
         if (!$config->read_file_at_path($config_file)) {
             throw new \Exception('Could not read config file ' . $config_file);
         }
@@ -121,7 +122,7 @@ class setup
         }
 
         // Create a config file
-        $config = new \midgard_config();
+        $config = new config;
         $config->dbtype = $dbtype;
 
         if ($config->dbtype == 'MySQL') {

@@ -14,6 +14,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use midgard\portable\storage\connection;
+use midgard\portable\api\error\exception as mgd_exception;
 
 /**
  * Converts a mgd1 DB to mgd2
@@ -25,7 +26,7 @@ use midgard\portable\storage\connection;
 class convert extends setup
 {
     /**
-     * @var midgard_config
+     * @var \midgard\portable\api\config
      */
     protected $_config;
 
@@ -191,7 +192,7 @@ class convert extends setup
 
         try {
             $user->create();
-        } catch (\midgard_error_exception $e) {
+        } catch (mgd_exception $e) {
             return false;
         }
         return true;
