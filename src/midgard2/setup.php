@@ -50,7 +50,7 @@ class setup extends Command
     protected $_basepath;
 
     /**
-     * the setup class specific to midgard2 or midgard-portable
+     * The setup class
      *
      * @var \openpsa\installer\setup
      */

@@ -86,7 +86,7 @@ class installer extends base_installer
         if ($dir === null) {
             $dir = dirname($this->vendorDir);
         }
-        $class = new \ReflectionClass('Composer\IO\ConsoleIO');
+        $class = new \ReflectionClass(ConsoleIO::class);
         $input = $class->getProperty("input");
         $input->setAccessible(true);
         $output = $class->getProperty("output");
