@@ -144,7 +144,7 @@ class convert extends setup
 
         \midcom::init();
 
-        $qb = new \midgard_query_builder(\midcom::get('config')->get('person_class'));
+        $qb = new \midgard_query_builder(\midcom::get()->config->get('person_class'));
         $qb->add_constraint('username', '<>', '');
         $results = $qb->execute();
 
@@ -159,7 +159,7 @@ class convert extends setup
     private function _migrate_account($person)
     {
         $user = new \midgard_user();
-        $user->authtype = \midcom::get('config')->get('auth_type');
+        $user->authtype = \midcom::get()->config->get('auth_type');
         $db_password = $person->password;
 
         $this->_output->writeln("Processing user <info>" . $person->username . "</info>");
@@ -176,7 +176,7 @@ class convert extends setup
         $user->password = $db_password;
         $user->login = $person->username;
 
-        if (\midcom::get('config')->get('person_class') != 'midgard_person') {
+        if (\midcom::get()->config->get('person_class') != 'midgard_person') {
             $mgd_person = new \midgard_person($person->guid);
         } else {
             $mgd_person = $person;
