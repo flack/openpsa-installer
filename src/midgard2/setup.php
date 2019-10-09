@@ -56,7 +56,7 @@ class setup extends Command
      */
     protected $_setup;
 
-    public static function install($basepath, $dbtype = 'MySQL')
+    public static function install(string $basepath, $dbtype = 'MySQL') : int
     {
         helper::prepare_project_directory($basepath);
         $app = new Application;
@@ -72,7 +72,7 @@ class setup extends Command
         return $command->run(new ArrayInput($args), new StreamOutput(fopen('php://stdout', 'w')));
     }
 
-    public function set_basepath($basepath)
+    public function set_basepath(string $basepath)
     {
         $this->_basepath = $basepath;
     }
@@ -107,7 +107,7 @@ class setup extends Command
     {
         $this->_initialize($input, $output);
 
-        $config = $this->_setup->prepare_config();
+        $this->_setup->prepare_config();
         $this->_setup->prepare_storage();
     }
 }

@@ -49,9 +49,12 @@ class setup
 
     protected $_helperset;
 
-    protected $_config = null;
+    /**
+     * @var config
+     */
+    protected $_config;
 
-    public function __construct(InputInterface $input, OutputInterface $output, $basepath, $helperset)
+    public function __construct(InputInterface $input, OutputInterface $output, string $basepath, $helperset)
     {
         $this->_input = $input;
         $this->_output = $output;
@@ -59,7 +62,7 @@ class setup
         $this->_helperset = $helperset;
     }
 
-    protected function _determine_config_path()
+    protected function _determine_config_path() : string
     {
         $config_file = $this->_input->getArgument('config');
         if (   $config_file
@@ -78,13 +81,13 @@ class setup
         return $config_file;
     }
 
-    public function prepare_config()
+    public function prepare_config() : config
     {
         $this->_config = $this->load_config();
         return $this->_config;
     }
 
-    public function load_config()
+    public function load_config() : config
     {
         $config_file = $this->_determine_config_path();
         // no config so far...
@@ -101,14 +104,14 @@ class setup
         return $config;
     }
 
-    public function create_config()
+    public function create_config() : config
     {
         $project_name = $this->_input->getArgument('config');
         if (!$project_name) {
             $project_name = basename($this->_basepath);
             // unittests
             if ($project_name == "__output") {
-                $project_name = basename(dirname(dirname($this->_basepath))) . "_test";
+                $project_name = basename(dirname($this->_basepath, 2)) . "_test";
             }
         }
 
@@ -211,7 +214,7 @@ class setup
         $console->run($input, $this->_output);
     }
 
-    protected function _ask($question, $default)
+    protected function _ask(string $question, $default)
     {
         $dialog = $this->_helperset->get('question');
         if (is_bool($default)) {
@@ -222,7 +225,7 @@ class setup
         return $dialog->ask($this->_input, $this->_output, $question);
     }
 
-    protected function _ask_hidden($question)
+    protected function _ask_hidden(string $question)
     {
         $dialog = $this->_helperset->get('question');
         $question = new Question('<question>' . $question . '</question>');
@@ -231,7 +234,7 @@ class setup
         return $dialog->ask($this->_input, $this->_output, $question);
     }
 
-    public static function prepare_project_directory($basedir)
+    public static function prepare_project_directory(string $basedir)
     {
         $fs = new Filesystem;
         $fs->mkdir($basedir . '/config');

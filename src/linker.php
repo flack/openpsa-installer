@@ -64,7 +64,7 @@ class linker
         $this->set_schema_location($this->basepath . '/var/schemas/');
     }
 
-    public function get_links($repo_dir)
+    public function get_links(string $repo_dir)
     {
         $this->links = [];
         $this->get_static_links($repo_dir);
@@ -78,7 +78,7 @@ class linker
      *
      * @param string $path The package path
      */
-    public function install($path)
+    public function install(string $path)
     {
         foreach ($this->get_links($path) as $linkdata) {
             $this->link($linkdata['target'], $linkdata['linkname'], $linkdata['target_path']);
@@ -90,7 +90,7 @@ class linker
      *
      * @param string $path The package path
      */
-    public function uninstall($path)
+    public function uninstall(string $path)
     {
         foreach ($this->get_links($path) as $linkdata) {
             $this->unlink($linkdata['linkname']);
@@ -103,7 +103,7 @@ class linker
      * @param string $path The package path
      * @param array $oldlinks Existing links from the former package version
      */
-    public function update($path, array $oldlinks)
+    public function update(string $path, array $oldlinks)
     {
         foreach ($oldlinks as $linkdata) {
             $target_path = $linkdata['target_path'] ?: realpath($linkdata['target']);
@@ -114,12 +114,12 @@ class linker
         $this->install($path);
     }
 
-    public function set_schema_location($path)
+    public function set_schema_location(string $path)
     {
         $this->schema_location = $path;
     }
 
-    public function unlink($linkname)
+    public function unlink(string $linkname)
     {
         if (is_link($linkname)) {
             $this->output->writeln('Removing link <info>' . $linkname . '</info>');
@@ -134,7 +134,7 @@ class linker
      * @param string $linkname
      * @param string $target_path
      */
-    public function link($target, $linkname, $target_path = null)
+    public function link(string $target, $linkname, string $target_path = null)
     {
         if (null === $target_path) {
             $target_path = $target;
@@ -214,7 +214,7 @@ class linker
         }
     }
 
-    private function get_static_links($repo_dir)
+    private function get_static_links(string $repo_dir)
     {
         $source = $repo_dir . $this->static_dir;
         if (!is_dir($source)) {
@@ -237,7 +237,7 @@ class linker
         }
     }
 
-    private function get_theme_links($repo_dir)
+    private function get_theme_links(string $repo_dir)
     {
         $source = $repo_dir . $this->themes_dir;
         if (!is_dir($source)) {
@@ -273,7 +273,7 @@ class linker
         }
     }
 
-    private function get_schema_links($repo_dir)
+    private function get_schema_links(string $repo_dir)
     {
         $source = $repo_dir . $this->schemas_dir;
         if (!is_dir($source)) {
@@ -295,13 +295,13 @@ class linker
         }
     }
 
-    private function prepare_dir($dir)
+    private function prepare_dir(string $dir)
     {
         $fs = new Filesystem;
         $fs->mkdir($this->basepath . '/' . $dir);
     }
 
-    private function get_relative_path($absolute_path, $updir_count = 2)
+    private function get_relative_path(string $absolute_path, $updir_count = 2)
     {
         return str_repeat('../', $updir_count) . substr($absolute_path, strlen($this->basepath) + 1);
     }

@@ -94,7 +94,7 @@ class convert extends setup
         $this->pdo->exec('UPDATE snippet SET snippetdir = up');
     }
 
-    private function _verify_table($table)
+    private function _verify_table(string $table) : bool
     {
         $result = $this->pdo->query('SHOW TABLES LIKE "' . $table . '"');
         if ($result->rowCount() == 0) {

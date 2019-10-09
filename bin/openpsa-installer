@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 //Some fiddling to get autoloader...
-$path = dirname(dirname(dirname(__DIR__))) . '/autoload.php'; // installed as dependency
+$path = dirname(__DIR__, 3) . '/autoload.php'; // installed as dependency
 if (!file_exists($path)) {
     $path = dirname(__DIR__) . '/vendor/autoload.php'; // installed as root package
 }
