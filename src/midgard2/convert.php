@@ -56,7 +56,7 @@ class convert extends setup
             ->addOption('skip-storage', null, InputOption::VALUE_NONE, 'Skip Midgard storage upgrade');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output) : int
     {
         $this->_initialize($input, $output);
         $this->_config = $this->_setup->prepare_config();
@@ -71,6 +71,7 @@ class convert extends setup
         $this->_convert_tables();
         $this->_migrate_accounts();
         $this->_update_at_entries();
+        return 0;
     }
 
     private function _convert_tables()

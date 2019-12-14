@@ -103,11 +103,13 @@ class setup extends Command
         $this->_setup = $this->get_setup_strategy();
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output) : int
     {
         $this->_initialize($input, $output);
 
         $this->_setup->prepare_config();
         $this->_setup->prepare_storage();
+
+        return 0;
     }
 }
