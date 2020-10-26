@@ -81,11 +81,8 @@ class installer extends base_installer
         $linker->install($basedir);
     }
 
-    private static function get_linker($dir, ConsoleIO $io)
+    private static function get_linker(string $dir, ConsoleIO $io) : linker
     {
-        if ($dir === null) {
-            $dir = dirname($this->vendorDir);
-        }
         $class = new \ReflectionClass(ConsoleIO::class);
         $input = $class->getProperty("input");
         $input->setAccessible(true);
