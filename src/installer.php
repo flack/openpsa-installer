@@ -13,6 +13,7 @@ use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Script\Event;
 use Composer\IO\ConsoleIO;
+use React\Promise\PromiseInterface;
 
 /**
  * Simple installer class. Runs standard Composer functionality and attaches custom services where appropriate
@@ -36,10 +37,19 @@ class installer extends base_installer
     {
         $linker = self::get_linker(dirname($this->vendorDir), $this->io);
         $old_links = $linker->get_links($this->getPackageBasePath($initial));
+        $path = $this->getPackageBasePath($target);
+        $callback = function() use ($linker, $path, $old_links) {
+            $linker->update($path, $old_links);
+        };
 
-        parent::update($repo, $initial, $target);
+        $promise = parent::update($repo, $initial, $target);
 
-        $linker->update($this->getPackageBasePath($target), $old_links);
+        // composer 2
+        if ($promise instanceof PromiseInterface) {
+            return $promise->then($callback);
+        }
+        // composer 1
+        $callback();
     }
 
     /**
@@ -47,10 +57,21 @@ class installer extends base_installer
      */
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        parent::install($repo, $package);
-
         $linker = self::get_linker(dirname($this->vendorDir), $this->io);
-        $linker->install($this->getPackageBasePath($package));
+        $path = $this->getPackageBasePath($package);
+
+        $callback = function() use ($linker, $path) {
+            $linker->install($path);
+        };
+
+        $promise = parent::install($repo, $package);
+
+        // composer 2
+        if ($promise instanceof PromiseInterface) {
+            return $promise->then($callback);
+        }
+        // composer 1
+        $callback();
     }
 
     /**
@@ -59,9 +80,20 @@ class installer extends base_installer
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         $linker = self::get_linker(dirname($this->vendorDir), $this->io);
-        $linker->uninstall($this->getPackageBasePath($package));
+        $path = $this->getPackageBasePath($package);
 
-        parent::uninstall($repo, $package);
+        $callback = function() use ($linker, $path) {
+            $linker->uninstall($path);
+        };
+
+        $promise = parent::uninstall($repo, $package);
+
+        // composer 2
+        if ($promise instanceof PromiseInterface) {
+            return $promise->then($callback);
+        }
+        // composer 1
+        $callback();
     }
 
     /**
