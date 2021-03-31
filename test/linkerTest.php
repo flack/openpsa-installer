@@ -8,13 +8,14 @@
 
 use openpsa\installer\linker;
 use Symfony\Component\Filesystem\Filesystem;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Simple linker tests
  *
  * @package openpsa.installer
  */
-class linkerTest extends PHPUnit_Framework_TestCase
+class linkerTest extends TestCase
 {
     /**
      * @var string
@@ -43,7 +44,7 @@ class linkerTest extends PHPUnit_Framework_TestCase
 
     private $paths = [];
 
-    protected function setUp()
+    protected function setUp() : void
     {
         $this->basedir = realpath(__DIR__) . DIRECTORY_SEPARATOR . 'test-basedir-' . uniqid();
 
@@ -83,7 +84,7 @@ class linkerTest extends PHPUnit_Framework_TestCase
         return implode(DIRECTORY_SEPARATOR, $parts);
     }
 
-    protected function tearDown()
+    protected function tearDown() : void
     {
         $this->fs->remove($this->basedir);
     }

@@ -10,13 +10,14 @@ use openpsa\installer\installer;
 use Composer\Composer;
 use Composer\Config;
 use Symfony\Component\Filesystem\Filesystem;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Simple installer tests
  *
  * @package openpsa.installer
  */
-class installerTest extends PHPUnit_Framework_TestCase
+class installerTest extends TestCase
 {
     /**
      * @var installer
@@ -58,7 +59,7 @@ class installerTest extends PHPUnit_Framework_TestCase
      */
     protected $fs;
 
-    protected function setUp()
+    protected function setUp() : void
     {
         $this->fs = new Filesystem;
 
@@ -96,7 +97,7 @@ class installerTest extends PHPUnit_Framework_TestCase
     }
 
 
-    protected function tearDown()
+    protected function tearDown() : void
     {
         $this->fs->remove($this->vendorDir);
     }
