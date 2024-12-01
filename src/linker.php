@@ -134,7 +134,7 @@ class linker
      * @param string $linkname
      * @param string $target_path
      */
-    public function link(string $target, $linkname, string $target_path = null)
+    public function link(string $target, $linkname, ?string $target_path = null)
     {
         if (null === $target_path) {
             $target_path = $target;
