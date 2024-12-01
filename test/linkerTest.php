@@ -132,7 +132,7 @@ class linkerTest extends TestCase
         $linker->install($this->basedir);
 
         $this->assertFileExists($this->makepath(['web', 'midcom-static', 'component.name']));
-        $this->assertFileNotExists($this->makepath(['web', 'midcom-static', 'theme-name']));
+        $this->assertFileDoesNotExist($this->makepath(['web', 'midcom-static', 'theme-name']));
     }
 
     /**
@@ -146,9 +146,9 @@ class linkerTest extends TestCase
         $linker = $this->_get_linker();
         $linker->uninstall($this->basedir);
 
-        $this->assertFileNotExists($this->makepath(['web', 'midcom-static', 'component.name']));
-        $this->assertFileNotExists($this->makepath(['web', 'midcom-static', 'theme-name']));
-        $this->assertFileNotExists($this->makepath(['var', 'themes', 'theme-name']));
-        $this->assertFileNotExists($this->makepath(['schemas_location', 'component_name.xml']));
+        $this->assertFileDoesNotExist($this->makepath(['web', 'midcom-static', 'component.name']));
+        $this->assertFileDoesNotExist($this->makepath(['web', 'midcom-static', 'theme-name']));
+        $this->assertFileDoesNotExist($this->makepath(['var', 'themes', 'theme-name']));
+        $this->assertFileDoesNotExist($this->makepath(['schemas_location', 'component_name.xml']));
     }
 }
