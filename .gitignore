@@ -9,4 +9,4 @@ phpunit.xml
 .directory
 *~
 /var
-/.phpunit.result.cache
+/.phpunit.cache
