@@ -210,7 +210,7 @@ class setup
         $schema->connected = true;
         $console = new Application;
         $console->setAutoExit(false);
-        $console->add($schema);
+        $console->addCommands([$schema]);
         $console->run($input, $this->_output);
     }
 
