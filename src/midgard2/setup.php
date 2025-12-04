@@ -60,7 +60,7 @@ class setup extends Command
     {
         helper::prepare_project_directory($basepath);
         $app = new Application;
-        $app->add(new self);
+        $app->addCommands([new self]);
 
         $args = [
             'command' => 'midgard2:setup',
