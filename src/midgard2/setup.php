@@ -77,7 +77,7 @@ class setup extends Command
         $this->_basepath = $basepath;
     }
 
-    protected function configure()
+    protected function configure() : void
     {
         $this->setName('midgard2:setup')
             ->setDescription('Prepare Midgard2 database and project directory')
