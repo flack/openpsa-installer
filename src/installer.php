@@ -117,11 +117,8 @@ class installer extends base_installer
     {
         $class = new \ReflectionClass(ConsoleIO::class);
         $input = $class->getProperty("input");
-        $input->setAccessible(true);
         $output = $class->getProperty("output");
-        $output->setAccessible(true);
         $helperset = $class->getProperty("helperSet");
-        $helperset->setAccessible(true);
         return new linker($dir, $input->getValue($io), $output->getValue($io), $helperset->getValue($io));
     }
 }
