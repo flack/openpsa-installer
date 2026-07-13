@@ -20,31 +20,21 @@ use Symfony\Component\Console\Question\Question;
  */
 class linker
 {
-    private $themes_dir = '/themes';
-    private $schemas_dir = '/schemas';
-    private $static_dir = '/static';
-    private $schema_location = '/usr/share/midgard2/schema/';
+    private const THEMES_DIR = '/themes';
+    private const SCHEMAS_DIR = '/schemas';
+    private const STATIC_DIR = '/static';
 
-    private $readonly_behavior;
+    private string $schema_location = '/usr/share/midgard2/schema/';
 
-    private $basepath;
+    private ?string $readonly_behavior = null;
 
-    private $links = [];
+    private readonly string $basepath;
 
-    /**
-     * @var InputInterface
-     */
-    private $input;
+    private array $links = [];
 
-    /**
-     * @var OutputInterface
-     */
-    private $output;
-
-    /**
-     * @var HelperSet
-     */
-    private $helperset;
+    private InputInterface $input;
+    private OutputInterface $output;
+    private HelperSet $helperset;
 
     /**
      * Default constructor
@@ -192,9 +182,7 @@ class linker
                 throw new \Exception('could not link ' . $target . ' to ' . $linkname . ': ' . $error['message']);
             }
         }
-        if ($this->output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
-            $this->output->writeln('Linked <info>' . $target . '</info> to <comment>' . $linkname . '</comment>');
-        }
+        $this->output->writeln('Linked <info>' . $target . '</info> to <comment>' . $linkname . '</comment>', OutputInterface::VERBOSITY_VERBOSE);
     }
 
     public function remove_dangling_links()
@@ -216,7 +204,7 @@ class linker
 
     private function get_static_links(string $repo_dir)
     {
-        $source = $repo_dir . $this->static_dir;
+        $source = $repo_dir . self::STATIC_DIR;
         if (!is_dir($source)) {
             return;
         }
@@ -239,7 +227,7 @@ class linker
 
     private function get_theme_links(string $repo_dir)
     {
-        $source = $repo_dir . $this->themes_dir;
+        $source = $repo_dir . self::THEMES_DIR;
         if (!is_dir($source)) {
             return;
         }
@@ -275,7 +263,7 @@ class linker
 
     private function get_schema_links(string $repo_dir)
     {
-        $source = $repo_dir . $this->schemas_dir;
+        $source = $repo_dir . self::SCHEMAS_DIR;
         if (!is_dir($source)) {
             return;
         }
