@@ -9,6 +9,7 @@
 namespace openpsa\installer\midgard2;
 
 use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
@@ -23,6 +24,7 @@ use openpsa\installer\setup as helper;
  *
  * @package openpsa.installer
  */
+#[AsCommand(name: 'midgard2:setup', description: 'Prepare Midgard2 database and project directory')]
 class setup extends Command
 {
     /**
@@ -79,9 +81,7 @@ class setup extends Command
 
     protected function configure() : void
     {
-        $this->setName('midgard2:setup')
-            ->setDescription('Prepare Midgard2 database and project directory')
-            ->addArgument('config', InputArgument::OPTIONAL, 'Full path to Midgard2 config file')
+        $this->addArgument('config', InputArgument::OPTIONAL, 'Full path to Midgard2 config file')
             ->addOption('dbtype', null, InputOption::VALUE_REQUIRED, 'DB type', 'MySQL');
     }
 
