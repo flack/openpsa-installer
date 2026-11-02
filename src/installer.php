@@ -32,7 +32,7 @@ class installer extends base_installer
         $old_links = $linker->get_links($this->getPackageBasePath($initial));
         $path = $this->getPackageBasePath($target);
 
-        parent::update($repo, $initial, $target)
+        return parent::update($repo, $initial, $target)
             ->then(function() use ($linker, $path, $old_links) {
                 $linker->update($path, $old_links);
             });
@@ -43,7 +43,7 @@ class installer extends base_installer
         $linker = self::get_linker(dirname($this->vendorDir), $this->io);
         $path = $this->getPackageBasePath($package);
 
-        parent::install($repo, $package)
+        return parent::install($repo, $package)
             ->then(function() use ($linker, $path) {
                 $linker->install($path);
             });
@@ -54,7 +54,7 @@ class installer extends base_installer
         $linker = self::get_linker(dirname($this->vendorDir), $this->io);
         $path = $this->getPackageBasePath($package);
 
-        parent::uninstall($repo, $package)
+        return parent::uninstall($repo, $package)
             ->then(function() use ($linker, $path) {
                 $linker->uninstall($path);
             });
