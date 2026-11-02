@@ -21,17 +21,11 @@ use Composer\IO\ConsoleIO;
  */
 class installer extends base_installer
 {
-    /**
-     * {@inheritDoc}
-     */
     public function supports($packageType)
     {
         return $packageType === 'midcom-package';
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
         $linker = self::get_linker(dirname($this->vendorDir), $this->io);
@@ -44,9 +38,6 @@ class installer extends base_installer
             });
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         $linker = self::get_linker(dirname($this->vendorDir), $this->io);
@@ -58,9 +49,6 @@ class installer extends base_installer
             });
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         $linker = self::get_linker(dirname($this->vendorDir), $this->io);
@@ -75,8 +63,6 @@ class installer extends base_installer
     /**
      * Links package resources to appropriate places and creates
      * the required directories inside the project directory
-     *
-     * @param Event $event The event we're called from
      */
     public static function setup_root_package(Event $event)
     {

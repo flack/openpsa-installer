@@ -37,13 +37,9 @@ class linker
     private HelperSet $helperset;
 
     /**
-     * Default constructor
-     *
      * @param string $basepath The root package path
-     * @param InputInterface $input
-     * @param OutputInterface $output
      */
-    public function __construct($basepath, InputInterface $input, OutputInterface $output, HelperSet $helperset)
+    public function __construct(string $basepath, InputInterface $input, OutputInterface $output, HelperSet $helperset)
     {
         $this->basepath = $basepath;
         $this->input = $input;
@@ -65,8 +61,6 @@ class linker
 
     /**
      * Package installation routine
-     *
-     * @param string $path The package path
      */
     public function install(string $path)
     {
@@ -77,8 +71,6 @@ class linker
 
     /**
      * Package uninstallation routine
-     *
-     * @param string $path The package path
      */
     public function uninstall(string $path)
     {
@@ -88,9 +80,8 @@ class linker
     }
 
     /**
-     * Package uninstallation routine
+     * Package update routine
      *
-     * @param string $path The package path
      * @param array $oldlinks Existing links from the former package version
      */
     public function update(string $path, array $oldlinks)
@@ -117,14 +108,7 @@ class linker
         }
     }
 
-    /**
-     * Direct access to link functionality
-     *
-     * @param string $target
-     * @param string $linkname
-     * @param string $target_path
-     */
-    public function link(string $target, $linkname, ?string $target_path = null)
+    public function link(string $target, string $linkname, ?string $target_path = null)
     {
         if (null === $target_path) {
             $target_path = $target;

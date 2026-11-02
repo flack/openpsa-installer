@@ -28,31 +28,18 @@ use Symfony\Component\Filesystem\Filesystem;
  */
 class setup
 {
-    /**
-     *
-     * @var InputInterface
-     */
-    protected $_input;
+    protected InputInterface $_input;
 
-    /**
-     *
-     * @var OutputInterface
-     */
-    protected $_output;
+    protected OutputInterface $_output;
 
     /**
      * The root package path
-     *
-     * @var string
      */
-    protected $_basepath;
+    protected string $_basepath;
 
     protected $_helperset;
 
-    /**
-     * @var config
-     */
-    protected $_config;
+    protected ?config $_config = null;
 
     public function __construct(InputInterface $input, OutputInterface $output, string $basepath, $helperset)
     {

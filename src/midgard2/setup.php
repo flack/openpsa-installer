@@ -27,36 +27,16 @@ use openpsa\installer\setup as helper;
 #[AsCommand(name: 'midgard2:setup', description: 'Prepare Midgard2 database and project directory')]
 class setup extends Command
 {
-    /**
-     * @var InputInterface
-     */
-    protected $_input;
+    protected InputInterface $_input;
 
-    /**
-     * @var OutputInterface
-     */
-    protected $_output;
-
-    /**
-     * The share dir
-     *
-     * @var string
-     */
-    protected $_sharedir;
+    protected OutputInterface $_output;
 
     /**
      * The root package path
-     *
-     * @var string
      */
-    protected $_basepath;
+    protected ?string $_basepath = null;
 
-    /**
-     * The setup class
-     *
-     * @var \openpsa\installer\setup
-     */
-    protected $_setup;
+    protected helper $_setup;
 
     public static function install(string $basepath, $dbtype = 'MySQL') : int
     {
