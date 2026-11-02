@@ -38,7 +38,7 @@ class setup extends Command
 
     protected helper $_setup;
 
-    public static function install(string $basepath, $dbtype = 'MySQL') : int
+    public static function install(string $basepath, string $dbtype = 'MySQL') : int
     {
         helper::prepare_project_directory($basepath);
         $app = new Application;
@@ -54,7 +54,7 @@ class setup extends Command
         return $command->run(new ArrayInput($args), new ConsoleOutput);
     }
 
-    public function set_basepath(string $basepath)
+    public function set_basepath(string $basepath) : void
     {
         $this->_basepath = $basepath;
     }
@@ -65,13 +65,13 @@ class setup extends Command
             ->addOption('dbtype', null, InputOption::VALUE_REQUIRED, 'DB type', 'MySQL');
     }
 
-    private function get_setup_strategy()
+    private function get_setup_strategy() : helper
     {
         $helperset = $this->getHelperSet();
         return new \openpsa\installer\setup($this->_input, $this->_output, $this->_basepath, $helperset);
     }
 
-    protected function _initialize(InputInterface $input, OutputInterface $output)
+    protected function _initialize(InputInterface $input, OutputInterface $output) : void
     {
         if (empty($this->_basepath)) {
             $this->_basepath = realpath('./');

@@ -13,6 +13,7 @@ use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Script\Event;
 use Composer\IO\ConsoleIO;
+use React\Promise\PromiseInterface;
 
 /**
  * Simple installer class. Runs standard Composer functionality and attaches custom services where appropriate
@@ -21,12 +22,12 @@ use Composer\IO\ConsoleIO;
  */
 class installer extends base_installer
 {
-    public function supports($packageType)
+    public function supports(string $packageType) : bool
     {
         return $packageType === 'midcom-package';
     }
 
-    public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
+    public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target) : ?PromiseInterface
     {
         $linker = self::get_linker(dirname($this->vendorDir), $this->io);
         $old_links = $linker->get_links($this->getPackageBasePath($initial));
@@ -38,7 +39,7 @@ class installer extends base_installer
             });
     }
 
-    public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
+    public function install(InstalledRepositoryInterface $repo, PackageInterface $package) : ?PromiseInterface
     {
         $linker = self::get_linker(dirname($this->vendorDir), $this->io);
         $path = $this->getPackageBasePath($package);
@@ -49,7 +50,7 @@ class installer extends base_installer
             });
     }
 
-    public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
+    public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package) : ?PromiseInterface
     {
         $linker = self::get_linker(dirname($this->vendorDir), $this->io);
         $path = $this->getPackageBasePath($package);
@@ -64,7 +65,7 @@ class installer extends base_installer
      * Links package resources to appropriate places and creates
      * the required directories inside the project directory
      */
-    public static function setup_root_package(Event $event)
+    public static function setup_root_package(Event $event) : void
     {
         $basedir = realpath('./');
         setup::prepare_project_directory($basedir);

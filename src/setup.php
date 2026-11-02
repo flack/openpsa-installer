@@ -14,6 +14,7 @@ use midgard\portable\driver;
 use midgard\portable\storage\connection;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Question\ChoiceQuestion;
@@ -37,11 +38,11 @@ class setup
      */
     protected string $_basepath;
 
-    protected $_helperset;
+    protected HelperSet $_helperset;
 
     protected ?config $_config = null;
 
-    public function __construct(InputInterface $input, OutputInterface $output, string $basepath, $helperset)
+    public function __construct(InputInterface $input, OutputInterface $output, string $basepath, HelperSet $helperset)
     {
         $this->_input = $input;
         $this->_output = $output;
@@ -152,7 +153,7 @@ class setup
         return $config;
     }
 
-    public function prepare_connection($autostart = true)
+    public function prepare_connection(bool $autostart = true) : void
     {
         connection::set_autostart($autostart);
         if (   file_exists($this->_basepath . '/config/midgard-portable.inc.php')
@@ -177,7 +178,7 @@ class setup
         connection::initialize($driver, $db_config);
     }
 
-    public function prepare_storage()
+    public function prepare_storage() : void
     {
         if (is_null($this->_config)) {
             throw new \Exception("No config loaded");
@@ -201,7 +202,7 @@ class setup
         $console->run($input, $this->_output);
     }
 
-    protected function _ask(string $question, $default)
+    protected function _ask(string $question, string|bool $default) : string|bool|null
     {
         $dialog = $this->_helperset->get('question');
         if (is_bool($default)) {
@@ -212,7 +213,7 @@ class setup
         return $dialog->ask($this->_input, $this->_output, $question);
     }
 
-    protected function _ask_hidden(string $question)
+    protected function _ask_hidden(string $question) : ?string
     {
         $dialog = $this->_helperset->get('question');
         $question = new Question('<question>' . $question . '</question>');
@@ -221,7 +222,7 @@ class setup
         return $dialog->ask($this->_input, $this->_output, $question);
     }
 
-    public static function prepare_project_directory(string $basedir)
+    public static function prepare_project_directory(string $basedir) : void
     {
         $fs = new Filesystem;
         $fs->mkdir($basedir . '/config');
