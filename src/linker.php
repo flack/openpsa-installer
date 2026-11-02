@@ -147,7 +147,9 @@ class linker
                 return;
             }
         } elseif (is_file($linkname)) {
-            if (md5_file($linkname) !== md5_file($target_path)) {
+            if (is_dir($target_path)) {
+                $this->output->writeln('Skipping <info>' . basename($target) . '</info>: Found existing directory in <comment>' . dirname($linkname) . '</comment>');
+            } elseif (md5_file($linkname) !== md5_file($target_path)) {
                 $this->output->writeln('Skipping <info>' . basename($target) . '</info>: Found existing file in <comment>' . dirname($linkname) . '</comment>');
             }
             return;
