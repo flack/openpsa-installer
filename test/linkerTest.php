@@ -8,6 +8,7 @@
 
 use openpsa\installer\linker;
 use Symfony\Component\Filesystem\Filesystem;
+use PHPUnit\Framework\Attributes\Depends;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -135,9 +136,7 @@ class linkerTest extends TestCase
         $this->assertFileDoesNotExist($this->makepath(['web', 'midcom-static', 'theme-name']));
     }
 
-    /**
-     * @depends testInstall
-     */
+    #[Depends('testInstall')]
     public function testUninstall()
     {
         $linker = $this->_get_linker();
