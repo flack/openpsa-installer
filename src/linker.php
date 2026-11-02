@@ -216,7 +216,7 @@ class linker
         $iterator = new \DirectoryIterator($source);
         foreach ($iterator as $child) {
             if (   $child->getType() == 'dir'
-                && substr($child->getFileName(), 0, 1) !== '.') {
+                && !str_starts_with($child->getFileName(), '.')) {
                 $absolute_path = $child->getPathname();
                 $this->links[] = [
                     'target' => $this->get_relative_path($absolute_path),
@@ -241,7 +241,7 @@ class linker
         $iterator = new \DirectoryIterator($source);
         foreach ($iterator as $child) {
             if (   $child->getType() == 'dir'
-                && substr($child->getFileName(), 0, 1) !== '.') {
+                && !str_starts_with($child->getFileName(), '.')) {
                 // link theme
                 $absolute_path = $child->getPathname();
                 $this->links[] = [
@@ -273,8 +273,8 @@ class linker
         $iterator = new \DirectoryIterator($source);
         foreach ($iterator as $child) {
             if (   $child->getType() == 'file'
-                && substr($child->getFileName(), 0, 1) !== '.'
-                && substr($child->getFilename(), -4) === '.xml') {
+                && !str_starts_with($child->getFileName(), '.')
+                && str_ends_with($child->getFilename(), '.xml')) {
                 $absolute_path = $child->getRealPath();
                 $this->links[] = [
                     'target' => $this->get_relative_path($absolute_path),
