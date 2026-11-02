@@ -16,7 +16,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Output\StreamOutput;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use openpsa\installer\setup as helper;
 
 /**
@@ -51,7 +51,7 @@ class setup extends Command
         $command = $app->find('midgard2:setup');
         $command->set_basepath($basepath);
 
-        return $command->run(new ArrayInput($args), new StreamOutput(fopen('php://stdout', 'w')));
+        return $command->run(new ArrayInput($args), new ConsoleOutput);
     }
 
     public function set_basepath(string $basepath)
