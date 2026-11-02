@@ -49,7 +49,7 @@ class setup
         $this->_helperset = $helperset;
     }
 
-    protected function _determine_config_path() : string
+    protected function _determine_config_path() : ?string
     {
         $config_file = $this->_input->getArgument('config');
         if (   $config_file
@@ -59,7 +59,7 @@ class setup
             $prefix = getenv('HOME') . '/.midgard2/conf.d/';
             if (!file_exists($prefix . $config_file)) {
                 $this->_output->writeln("Configuration file <info>" . $config_file . "</info> not found.");
-                return false;
+                return null;
             }
             $config_file = $prefix . $config_file;
         } else {
@@ -78,7 +78,7 @@ class setup
     {
         $config_file = $this->_determine_config_path();
         // no config so far...
-        if (!file_exists($config_file)) {
+        if (!$config_file || !file_exists($config_file)) {
             return $this->create_config();
         }
 
