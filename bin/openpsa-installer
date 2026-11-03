@@ -12,7 +12,9 @@ require_once $path;
 
 use Symfony\Component\Console\Application;
 use openpsa\installer\midgard2;
+use openpsa\installer\links;
 
 $console = new Application('OpenPSA Installer', '1.5-dev');
 $console->addCommand(new midgard2\setup);
+$console->addCommand(new links\rebuild);
 $console->run();

@@ -48,3 +48,11 @@ You can pass the name or location of an existing Midgard2 configuration file as 
 ```
 
 to see all available options.
+
+## Rebuilding links
+
+To delete and recreate all symlinks managed by the installer (for the root package and all installed packages of type ``midcom-package``), run this from your project's root directory:
+
+```sh
+./vendor/bin/openpsa-installer links:rebuild
+```
