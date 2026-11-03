@@ -11,6 +11,7 @@ namespace openpsa\installer\links;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use openpsa\installer\linker;
 
@@ -35,10 +36,16 @@ class rebuild extends Command
         $this->basepath = $basepath;
     }
 
+    protected function configure() : void
+    {
+        $this->addOption('force', 'f', InputOption::VALUE_NONE, 'Remove existing files, directories or links in place of managed links instead of skipping them');
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output) : int
     {
         $basepath = $this->basepath ?? realpath('./');
         $linker = new linker($basepath, $input, $output, $this->getHelperSet());
+        $linker->set_overwrite($input->getOption('force'));
 
         // dependencies first, root package last (same order as during composer install)
         $paths = $this->get_package_paths($basepath);

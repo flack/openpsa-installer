@@ -54,7 +54,7 @@ class linksRebuildTest extends TestCase
         $this->fs->dumpFile($this->basedir . '/' . $vendor_dir . '/composer/installed.json', json_encode(['packages' => $packages]));
     }
 
-    private function run_command() : CommandTester
+    private function run_command(array $input = []) : CommandTester
     {
         $app = new Application;
         $command = new rebuild;
@@ -62,7 +62,7 @@ class linksRebuildTest extends TestCase
         $command->set_basepath($this->basedir);
 
         $tester = new CommandTester($command);
-        $tester->execute([]);
+        $tester->execute($input);
         return $tester;
     }
 
@@ -88,6 +88,35 @@ class linksRebuildTest extends TestCase
         $this->assertFileDoesNotExist($static . '/lib.component');
         $this->assertFileExists($static . '/custom.txt');
         $this->assertStringContainsString('Rebuilt links for 2 package(s)', $tester->getDisplay());
+    }
+
+    public function testExecute_skips_existing_directory()
+    {
+        $dirname = $this->basedir . '/web/midcom-static/pkg.component';
+        $this->fs->dumpFile($dirname . '/local.css', 'local');
+
+        $tester = $this->run_command();
+
+        $this->assertSame(0, $tester->getStatusCode(), $tester->getDisplay());
+        $this->assertFalse(is_link($dirname));
+        $this->assertFileExists($dirname . '/local.css');
+        $this->assertStringContainsString('Found existing directory', $tester->getDisplay());
+    }
+
+    public function testExecute_force()
+    {
+        $static = $this->basedir . '/web/midcom-static';
+        $this->fs->dumpFile($static . '/pkg.component/local.css', 'local');
+        $this->fs->dumpFile($this->basedir . '/var/schemas/pkg.xml', 'local');
+        // unrelated file, must not be touched
+        touch($static . '/custom.txt');
+
+        $tester = $this->run_command(['--force' => true]);
+
+        $this->assertSame(0, $tester->getStatusCode(), $tester->getDisplay());
+        $this->assertSame($this->basedir . '/vendor/openpsa/pkg/static/pkg.component', realpath($static . '/pkg.component'));
+        $this->assertSame($this->basedir . '/vendor/openpsa/pkg/schemas/pkg.xml', realpath($this->basedir . '/var/schemas/pkg.xml'));
+        $this->assertFileExists($static . '/custom.txt');
     }
 
     public function testExecute_custom_vendor_dir()

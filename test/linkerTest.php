@@ -238,6 +238,48 @@ class linkerTest extends TestCase
         $this->assertStringContainsString('Found existing file', $output->fetch());
     }
 
+    public function testLink_keeps_existing_directory()
+    {
+        $dirname = $this->makepath(['web', 'midcom-static', 'component.name']);
+        $this->fs->mkdir($dirname);
+
+        $output = new BufferedOutput;
+        $this->_get_linker($output)->install($this->basedir);
+
+        $this->assertFalse(is_link($dirname));
+        $this->assertDirectoryExists($dirname);
+        $this->assertStringContainsString('Found existing directory', $output->fetch());
+    }
+
+    public function testLink_overwrite_replaces_existing_file_directory_and_link()
+    {
+        $schema = $this->makepath(['var', 'schemas', 'component_name.xml']);
+        $this->fs->dumpFile($schema, 'local content');
+        $static = $this->makepath(['web', 'midcom-static', 'component.name']);
+        $this->fs->dumpFile($static . '/local.css', 'local content');
+        $other = $this->makepath(['other']);
+        $this->fs->mkdir($other);
+        $theme = $this->makepath(['var', 'themes', 'theme-name']);
+        $this->fs->mkdir(dirname($theme));
+        symlink($other, $theme);
+
+        $output = new BufferedOutput;
+        $linker = $this->_get_linker($output);
+        $linker->set_overwrite(true);
+        $linker->install($this->basedir);
+
+        $this->assertTrue(is_link($schema));
+        $this->assertSame($this->makepath(['schemas', 'component_name.xml']), realpath($schema));
+        $this->assertTrue(is_link($static));
+        $this->assertSame($this->paths['component_static'], realpath($static));
+        $this->assertSame($this->makepath(['themes', 'theme-name']), realpath($theme));
+        $this->assertDirectoryExists($other);
+        $display = $output->fetch();
+        $this->assertStringContainsString('Removing existing file', $display);
+        $this->assertStringContainsString('Removing existing directory', $display);
+        $this->assertStringContainsString('Removing link', $display);
+    }
+
     public function testLink_replaces_dangling_link()
     {
         $this->fs->mkdir($this->makepath(['web', 'midcom-static']));

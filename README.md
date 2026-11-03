@@ -56,3 +56,10 @@ To delete and recreate all symlinks managed by the installer (for the root packa
 ```sh
 ./vendor/bin/openpsa-installer links:rebuild
 ```
+
+By default, existing files, directories or links to other locations that are in the way of a managed link are left alone
+and reported as skipped. Pass ``--force`` (or ``-f``) to remove them and replace them with the correct links:
+
+```sh
+./vendor/bin/openpsa-installer links:rebuild --force
+```

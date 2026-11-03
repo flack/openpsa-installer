@@ -28,6 +28,11 @@ class linker
 
     private ?string $readonly_behavior = null;
 
+    /**
+     * Whether existing files, directories or foreign links in place of a link should be removed
+     */
+    private bool $overwrite = false;
+
     private readonly string $basepath;
 
     private array $links = [];
@@ -100,6 +105,11 @@ class linker
         $this->schema_location = $path;
     }
 
+    public function set_overwrite(bool $overwrite) : void
+    {
+        $this->overwrite = $overwrite;
+    }
+
     public function unlink(string $linkname) : void
     {
         if (is_link($linkname)) {
@@ -123,20 +133,30 @@ class linker
             if (!file_exists(realpath($linkname))) {
                 $this->output->writeln('Link in <info>' . basename($target) . '</info> points to nonexistent path, removing');
                 @unlink($linkname);
+            } elseif (realpath($linkname) === $target_path) {
+                return;
+            } elseif ($this->overwrite) {
+                $this->output->writeln('Removing link <info>' . $linkname . '</info> to <comment>' . realpath($linkname) . '</comment>');
+                $this->remove($linkname);
             } else {
-                if (   realpath($linkname) !== $target_path
-                    && md5_file(realpath($linkname)) !== md5_file($target_path)) {
+                if (md5_file(realpath($linkname)) !== md5_file($target_path)) {
                     $this->output->writeln('Skipping <info>' . basename($target) . '</info>: Found Link in <info>' . dirname($linkname) . '</info> to <comment>' . realpath($linkname) . '</comment>');
                 }
                 return;
             }
-        } elseif (is_file($linkname)) {
-            if (is_dir($target_path)) {
-                $this->output->writeln('Skipping <info>' . basename($target) . '</info>: Found existing directory in <comment>' . dirname($linkname) . '</comment>');
-            } elseif (md5_file($linkname) !== md5_file($target_path)) {
-                $this->output->writeln('Skipping <info>' . basename($target) . '</info>: Found existing file in <comment>' . dirname($linkname) . '</comment>');
+        } elseif (file_exists($linkname)) {
+            $type = is_dir($linkname) ? 'directory' : 'file';
+            if ($this->overwrite) {
+                $this->output->writeln('Removing existing ' . $type . ' <info>' . $linkname . '</info>');
+                $this->remove($linkname);
+            } else {
+                if (   is_dir($linkname)
+                    || is_dir($target_path)
+                    || md5_file($linkname) !== md5_file($target_path)) {
+                    $this->output->writeln('Skipping <info>' . basename($target) . '</info>: Found existing ' . $type . ' in <comment>' . dirname($linkname) . '</comment>');
+                }
+                return;
             }
-            return;
         }
 
         if (!is_writeable(dirname($linkname))) {
@@ -267,6 +287,12 @@ class linker
                 ];
             }
         }
+    }
+
+    private function remove(string $path) : void
+    {
+        $fs = new Filesystem;
+        $fs->remove($path);
     }
 
     private function prepare_dir(string $dir) : void
